@@ -1,0 +1,34 @@
+{
+  "sports": [
+    {
+      "name": "Annual Sports Meet",
+      "date": "2024-03-15",
+      "description": "Join us for our annual sports meet featuring various athletic events and competitions.",
+      "programs": ["100m Race", "200m Race", "Long Jump", "High Jump", "Relay Race"]
+    }
+  ],
+  "cultural": [
+    {
+      "name": "Cultural Night",
+      "date": "2024-03-20",
+      "description": "A night of music, dance, and cultural performances from different regions.",
+      "programs": ["Classical Dance", "Folk Dance", "Singing Competition", "Drama"]
+    }
+  ],
+  "technical": [
+    {
+      "name": "Tech Symposium",
+      "date": "2024-03-25",
+      "description": "A technical symposium showcasing innovative projects and research.",
+      "programs": ["Project Exhibition", "Paper Presentation", "Hackathon", "Tech Quiz"]
+    }
+  ],
+  "other": [
+    {
+      "name": "Art Exhibition",
+      "date": "2024-03-18",
+      "description": "Showcase of student artwork and creative expressions.",
+      "programs": ["Painting", "Sculpture", "Digital Art", "Photography"]
+    }
+  ]
+} 

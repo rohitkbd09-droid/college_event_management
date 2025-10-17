@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Participation Details</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e8b57;
+      margin-bottom: 20px;
+    }
+
+    .filter {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    select {
+      padding: 10px;
+      width: 60%;
+      border-radius: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background-color: #2e8b57;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    @media (max-width: 600px) {
+      select {
+        width: 100%;
+      }
+
+      th, td {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Student Participation Details</h2>
+
+  <div class="filter">
+    <label for="event-filter"><strong>Sort by Event:</strong></label><br>
+    <select id="event-filter" onchange="filterParticipants()">
+      <option value="all">-- Select an Event --</option>
+      <option value="Race 100m">Race 100m</option>
+      <option value="Race 200m">Race 200m</option>
+      <option value="Badminton">Badminton</option>
+      <option value="Chess">Chess</option>
+      <option value="Table Tennis">Table Tennis</option>
+      <option value="Dance">Dance</option>
+      <option value="Poetry Slams">Poetry Slams</option>
+      <option value="Singing">Singing</option>
+      <option value="Coding">Coding</option>
+      <option value="Quiz">Quiz</option>
+      <option value="Tech Project">Tech Project</option>
+      <option value="Art Exhibition">Art Exhibition</option>
+      <option value="Painting">Painting</option>
+      <option value="Rangoli">Rangoli</option>
+      <option value="Sketching">Sketching</option>
+    </select>
+    
+  </div>
+
+  <table id="participants-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Phone</th>
+        <th>Event</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-event="Race 100m">
+        <td>Rahul Sharma</td>
+        <td>CSE</td>
+        <td>9876543210</td>
+        <td>Race 100m</td>
+      </tr>
+      <tr data-event="Coding">
+        <td>Anjali Verma</td>
+        <td>ECE</td>
+        <td>9876501234</td>
+        <td>Coding</td>
+      </tr>
+      <tr data-event="Dance">
+        <td>Sneha Reddy</td>
+        <td>EEE</td>
+        <td>9845123456</td>
+        <td>Dance</td>
+      </tr>
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function filterParticipants() {
+    const filter = document.getElementById("event-filter").value;
+    const rows = document.querySelectorAll("#participants-table tbody tr");
+
+    rows.forEach(row => {
+      if (filter === "all" || row.dataset.event === filter) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

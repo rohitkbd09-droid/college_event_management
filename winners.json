@@ -1,0 +1,161 @@
+{
+  "cse": {
+    "2022": {
+      "sports": [
+        {
+          "event": "100m Race",
+          "teamImage": "images/100m_race_cse.jpeg",
+          "players": ["Alice", "Bob"]
+        },
+        
+        {
+          "event": "Badminton",
+          "teamImage": "images/badminton_cse.jpg",
+          "players": ["Charlie", "David"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Dance",
+          "teamImage": "images/dance_cse.jpg",
+          "players": ["Eva", "Grace"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Coding Challenge",
+          "teamImage": "images/coding_cse.jpg",
+          "players": ["Ivy", "Jack"]
+        }
+      ]
+    },
+    "2025": {
+      "sports": [
+        {
+          "event": "kabaddi_champions",
+          "teamImage": "images/kabaddi_cse.jpg",
+          "players": ["harika", "pranavi" , "deepika" , "manogna" ,"mani" , "priyanka" , "madhuri"]
+        },
+        {
+          "event": "KHO-KHO_champions",
+          "teamImage": "images/throwball_cse.jpg",
+          "players": ["santhoshini","pooja","harika","madhuri" , "sriharshini" , "priyanka" , "jahnavi" , "manogna" , "divya"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Singing",
+          "teamImage": "images/singing_cse_2025.jpg",
+          "players": ["Mason", "Noah"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Tech Project",
+          "teamImage": "images/tech_project_cse_2025.jpg",
+          "players": ["Olivia", "Penny"]
+        }
+      ]
+    }
+  },
+  "csm": {
+    "2022": {
+      "sports": [
+        {
+          "event": "200m Race",
+          "teamImage": "images/200m_race_csm.jpg",
+          "players": ["Liam", "Mason"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Poetry",
+          "teamImage": "images/poetry_csm.jpg",
+          "players": ["Noah", "Oliver"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Quiz",
+          "teamImage": "images/quiz_csm.jpg",
+          "players": ["Penny", "Quinn"]
+        }
+      ]
+    }
+  },
+  "ece": {
+    "2023": {
+      "sports": [
+        {
+          "event": "Table Tennis",
+          "teamImage": "images/table_tennis_ece.jpg",
+          "players": ["Rachel", "Sophia"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Singing",
+          "teamImage": "images/singing_ece.jpg",
+          "players": ["Tom", "Ursula"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Tech Project",
+          "teamImage": "images/tech_project_ece.jpg",
+          "players": ["Victor", "Willow"]
+        }
+      ]
+    }
+  },
+  "mech": {
+    "2023": {
+      "sports": [
+        {
+          "event": "Chess",
+          "teamImage": "images/chess_mech.jpg",
+          "players": ["Xander", "Yara"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Poetry Slams",
+          "teamImage": "images/poetry_mech.jpg",
+          "players": ["Zane", "Abby"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Group Discussion",
+          "teamImage": "images/group_discussion_mech.jpg",
+          "players": ["Brian", "Carmen"]
+        }
+      ]
+    }
+  },
+  "civil": {
+    "2024": {
+      "sports": [
+        {
+          "event": "Badminton",
+          "teamImage": "images/badminton_civil.jpg",
+          "players": ["Daisy", "Ethan"]
+        }
+      ],
+      "cultural": [
+        {
+          "event": "Dance",
+          "teamImage": "images/dance_civil.jpg",
+          "players": ["Frank", "Grace"]
+        }
+      ],
+      "technical": [
+        {
+          "event": "Quiz",
+          "teamImage": "images/quiz_civil.jpg",
+          "players": ["Hannah", "Ivy"]
+        }
+      ]
+    }
+  }
+} 

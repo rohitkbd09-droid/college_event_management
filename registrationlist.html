@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All Registrations</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+      margin: 0;
+      padding: 20px;
+      animation: fadeIn 1s ease-in;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    table {
+      width: 90%;
+      margin: auto;
+      border-collapse: collapse;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      animation: slideUp 0.8s ease-in-out;
+    }
+
+    th {
+      background-color: #4285f4;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+      transition: background 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h2>All Event Registrations</h2>
+  <table id="registrationTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Phone</th>
+        <th>Event Type</th>
+        <th>Sub Events</th>
+        <th>Registered At</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch('http://localhost:3000/registrations')
+      .then(response => response.json())
+      .then(data => {
+        console.log("Fetched data:", data); // Helpful debug log
+        const tbody = document.querySelector('#registrationTable tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No registrations found</td></tr>';
+          return;
+        }
+        data.forEach(reg => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${reg.name}</td>
+            <td>${reg.branch}</td>
+            <td>${reg.phone}</td>
+            <td>${reg.event_type}</td>
+            <td>${reg.sub_events}</td>
+            <td>${new Date(reg.created_at).toLocaleString()}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        console.error('Error fetching registrations:', err);
+      });
+  </script>
+</body>
+</html>

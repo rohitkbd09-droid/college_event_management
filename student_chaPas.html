@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Password - Student Portal</title>
+    <link rel="stylesheet" href="css/changePassword.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%@include file="navbar/student_navbar.jsp"%>
+
+    <!-- Animated Background -->
+    <div class="background-animation"></div>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="password-card">
+            <div class="card-header">
+                <div class="header-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1>Change Password</h1>
+                <p class="subtitle">Update your password to keep your account secure</p>
+            </div>
+
+            <form id="passwordForm" onsubmit="return validatePasswordChange()">
+                <!-- Current Password -->
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="currentPassword" class="password-input" placeholder=" " required>
+                        <label for="currentPassword">Current Password</label>
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye-slash password-toggle"></i>
+                    </div>
+                    <div class="input-status">
+                        <i class="fas fa-circle-check success-icon"></i>
+                        <i class="fas fa-circle-xmark error-icon"></i>
+                    </div>
+                </div>
+
+                <!-- New Password -->
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="newPassword" class="password-input" placeholder=" " required>
+                        <label for="newPassword">New Password</label>
+                        <i class="fas fa-key input-icon"></i>
+                        <i class="fas fa-eye-slash password-toggle"></i>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-indicator"></div>
+                        </div>
+                        <span class="strength-text">Password Strength</span>
+                    </div>
+                </div>
+
+                <!-- Confirm New Password -->
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="confirmPassword" class="password-input" placeholder=" " required>
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <i class="fas fa-shield-alt input-icon"></i>
+                        <i class="fas fa-eye-slash password-toggle"></i>
+                    </div>
+                    <div class="input-status">
+                        <i class="fas fa-circle-check success-icon"></i>
+                        <i class="fas fa-circle-xmark error-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Password Requirements -->
+                <div class="password-requirements">
+                    <h3><i class="fas fa-info-circle"></i> Password Requirements</h3>
+                    <ul>
+                        <li id="length"><i class="fas fa-check"></i> At least 8 characters</li>
+                        <li id="uppercase"><i class="fas fa-check"></i> One uppercase letter</li>
+                        <li id="lowercase"><i class="fas fa-check"></i> One lowercase letter</li>
+                        <li id="number"><i class="fas fa-check"></i> One number</li>
+                        <li id="special"><i class="fas fa-check"></i> One special character</li>
+                    </ul>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn">
+                    <span>Update Password</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Message Container -->
+            <div id="messageContainer" class="message-container"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Password Toggle Functionality
+            const toggleButtons = document.querySelectorAll('.password-toggle');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling.previousElementSibling;
+                    const type = input.type === 'password' ? 'text' : 'password';
+                    input.type = type;
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                });
+            });
+
+            // Password Strength Checker
+            const newPassword = document.getElementById('newPassword');
+            const strengthIndicator = document.querySelector('.strength-indicator');
+            const strengthText = document.querySelector('.strength-text');
+
+            newPassword.addEventListener('input', function() {
+                const strength = checkPasswordStrength(this.value);
+                updateStrengthIndicator(strength);
+                updateRequirements(this.value);
+            });
+
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                const requirements = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[^A-Za-z0-9]/.test(password)
+                };
+
+                strength = Object.values(requirements).filter(Boolean).length;
+                return strength;
+            }
+
+            function updateStrengthIndicator(strength) {
+                const colors = ['#ff4757', '#ffa502', '#2ed573'];
+                const texts = ['Weak', 'Medium', 'Strong'];
+                const width = (strength / 5) * 100;
+                
+                strengthIndicator.style.width = `${width}%`;
+                strengthIndicator.style.backgroundColor = colors[Math.min(Math.floor(strength / 2), 2)];
+                strengthText.textContent = texts[Math.min(Math.floor(strength / 2), 2)];
+            }
+
+            function updateRequirements(password) {
+                const requirements = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[^A-Za-z0-9]/.test(password)
+                };
+
+                Object.entries(requirements).forEach(([req, met]) => {
+                    const li = document.getElementById(req);
+                    li.classList.toggle('met', met);
+                });
+            }
+
+            // Form Validation
+            window.validatePasswordChange = function() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const messageContainer = document.getElementById('messageContainer');
+
+                if (newPassword !== confirmPassword) {
+                    showMessage('Passwords do not match!', 'error');
+                    return false;
+                }
+
+                if (checkPasswordStrength(newPassword) < 3) {
+                    showMessage('Password does not meet requirements!', 'error');
+                    return false;
+                }
+
+                // Show loading state
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.classList.add('loading');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    showMessage('Password updated successfully!', 'success');
+                    submitBtn.classList.remove('loading');
+                }, 1500);
+
+                return false; // Prevent form submission for demo
+            };
+
+            function showMessage(message, type) {
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.className = `message-container ${type}`;
+                messageContainer.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    ${message}
+                `;
+                messageContainer.style.display = 'flex';
+
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
