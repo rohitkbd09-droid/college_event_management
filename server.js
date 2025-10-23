@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const mysql = require('mysql');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
@@ -30,6 +31,20 @@ const dbConfig = {
     waitForConnections: true,
     connectionLimit: 10
 };
+
+// If a CA cert is provided as BASE64 in DB_SSL_CA, use it for TLS
+if (process.env.DB_SSL_CA) {
+    try {
+        dbConfig.ssl = { ca: Buffer.from(process.env.DB_SSL_CA, 'base64') };
+        console.log('DB SSL CA loaded from environment variable');
+    } catch (e) {
+        console.error('Failed to parse DB_SSL_CA:', e.message);
+    }
+} else if (process.env.DB_ALLOW_UNAUTHORIZED === 'true') {
+    // For testing only: allow unauthorized (not recommended for production)
+    dbConfig.ssl = { rejectUnauthorized: false };
+    console.log('DB connection will allow unauthorized TLS (insecure)');
+}
 
 // Create connection with automatic reconnection
 const db = mysql.createConnection(dbConfig);
