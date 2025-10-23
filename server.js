@@ -20,13 +20,43 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 app.use(express.static(__dirname));
 
-// Database connection
-const db = mysql.createConnection({
+// Database connection configuration
+const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'prathap@8328294142',
-    database: process.env.DB_NAME || 'collegefest'
-});
+    database: process.env.DB_NAME || 'collegefest',
+    connectTimeout: 20000, // Increase timeout
+    waitForConnections: true,
+    connectionLimit: 10
+};
+
+// Create connection with automatic reconnection
+const db = mysql.createConnection(dbConfig);
+
+function handleDisconnect() {
+    console.log('Attempting to connect to database...');
+    
+    db.connect(function(err) {
+        if(err) {
+            console.error('Error connecting to database:', err);
+            console.log('Database connection failed. Retrying in 2 seconds...');
+            setTimeout(handleDisconnect, 2000);
+            return;
+        }
+        console.log('Connected to database successfully!');
+    });
+
+    db.on('error', function(err) {
+        console.error('Database error:', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+            console.log('Lost connection to database. Reconnecting...');
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
 
 // Initialize database
 async function initializeDatabase() {
@@ -105,15 +135,11 @@ async function initializeDatabase() {
 }
 
 // Connect to database
-db.connect((err) => {
-    if (err) {
-        console.error('MySQL connection error:', err);
-        return;
-    }
-    console.log('Connected to MySQL');
-    // Initialize database after connection is established
-    initializeDatabase();
-});
+// Initialize connection handling
+handleDisconnect();
+
+// Initialize database after connection setup
+setTimeout(initializeDatabase, 2000);
 
 // JWT secret
 const JWT_SECRET = 'your-secret-key';
