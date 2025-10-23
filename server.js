@@ -10,7 +10,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
@@ -18,10 +22,10 @@ app.use(express.static(__dirname));
 
 // Database connection
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'prathap@8328294142',
-    database: 'collegefest'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'prathap@8328294142',
+    database: process.env.DB_NAME || 'collegefest'
 });
 
 // Initialize database
@@ -55,6 +59,25 @@ async function initializeDatabase() {
                     category VARCHAR(100),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create registrations table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS registrations (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    branch VARCHAR(100),
+                    phone VARCHAR(20),
+                    event_type VARCHAR(100),
+                    sub_events TEXT,
+                    email VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             `, (err) => {
                 if (err) reject(err);
@@ -149,25 +172,47 @@ app.get('/test', (req, res) => res.send('Server is running fine!'));
 
 // Event Registration (from registration.html)
 app.post("/register", (req, res) => {
+    console.log('Registration request received:', req.body);
+    
     const { name, branch, phone, eventType, subEvents, email } = req.body;
-    const subEventsString = Array.isArray(subEvents) ? subEvents.join(', ') : subEvents;
-
-    if (!email || !email.includes('@')) {
-        return res.status(400).send('Invalid or missing email');
+    
+    // Validate required fields
+    if (!name || !branch || !phone || !eventType || !email) {
+        console.log('Missing required fields:', { name, branch, phone, eventType, email });
+        return res.status(400).json({
+            error: 'Missing required fields',
+            missing: Object.entries({ name, branch, phone, eventType, email })
+                .filter(([_, value]) => !value)
+                .map(([key]) => key)
+        });
     }
 
+    if (!email || !email.includes('@')) {
+        console.log('Invalid email:', email);
+        return res.status(400).json({ error: 'Invalid or missing email' });
+    }
+
+    const subEventsString = Array.isArray(subEvents) ? subEvents.join(', ') : subEvents;
+
     const sql = 'INSERT INTO registrations (name, branch, phone, event_type, sub_events, email) VALUES (?, ?, ?, ?, ?, ?)';
+    console.log('Executing SQL:', sql);
+    console.log('Values:', [name, branch, phone, eventType, subEventsString, email]);
+    
     db.query(sql, [name, branch, phone, eventType, subEventsString, email], (err, result) => {
         if (err) {
             console.error('Database insert error:', err);
-            return res.status(500).send('Server Error');
+            return res.status(500).json({
+                error: 'Database Error',
+                message: err.message,
+                code: err.code
+            });
         }
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'srinivasgalla30@gmail.com',
-                pass: 'qkzo owkl dkzy epti'
+                user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
             }
         });
 
