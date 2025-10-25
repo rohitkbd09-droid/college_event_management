@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const mysql = require('mysql');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
@@ -22,56 +21,16 @@ app.use(express.static(path.join(__dirname)));
 app.use(express.static(__dirname));
 
 // Database connection configuration
-const dbConfig = {
+const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'prathap@8328294142',
     database: process.env.DB_NAME || 'collegefest',
-    connectTimeout: 20000, // Increase timeout
-    waitForConnections: true,
-    connectionLimit: 10
-};
-
-// If a CA cert is provided as BASE64 in DB_SSL_CA, use it for TLS
-if (process.env.DB_SSL_CA) {
-    try {
-        dbConfig.ssl = { ca: Buffer.from(process.env.DB_SSL_CA, 'base64') };
-        console.log('DB SSL CA loaded from environment variable');
-    } catch (e) {
-        console.error('Failed to parse DB_SSL_CA:', e.message);
-    }
-} else if (process.env.DB_ALLOW_UNAUTHORIZED === 'true') {
-    // For testing only: allow unauthorized (not recommended for production)
-    dbConfig.ssl = { rejectUnauthorized: false };
-    console.log('DB connection will allow unauthorized TLS (insecure)');
-}
-
-// Create connection with automatic reconnection
-const db = mysql.createConnection(dbConfig);
-
-function handleDisconnect() {
-    console.log('Attempting to connect to database...');
-    
-    db.connect(function(err) {
-        if(err) {
-            console.error('Error connecting to database:', err);
-            console.log('Database connection failed. Retrying in 2 seconds...');
-            setTimeout(handleDisconnect, 2000);
-            return;
-        }
-        console.log('Connected to database successfully!');
-    });
-
-    db.on('error', function(err) {
-        console.error('Database error:', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
-            console.log('Lost connection to database. Reconnecting...');
-            handleDisconnect();
-        } else {
-            throw err;
-        }
-    });
-}
+    port: process.env.DB_PORT || 3306,
+    ssl: process.env.DB_SSL === 'true' ? {
+        rejectUnauthorized: false
+    } : false
+});
 
 // Initialize database
 async function initializeDatabase() {
@@ -150,11 +109,15 @@ async function initializeDatabase() {
 }
 
 // Connect to database
-// Initialize connection handling
-handleDisconnect();
-
-// Initialize database after connection setup
-setTimeout(initializeDatabase, 2000);
+db.connect((err) => {
+    if (err) {
+        console.error('MySQL connection error:', err);
+        return;
+    }
+    console.log('Connected to MySQL');
+    // Initialize database after connection is established
+    initializeDatabase();
+});
 
 // JWT secret
 const JWT_SECRET = 'your-secret-key';
