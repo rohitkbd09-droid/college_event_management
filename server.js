@@ -269,20 +269,25 @@ app.post('/login', (req, res) => {
 
 // Register User Account (from register.html)
 app.post("/register-user", (req, res) => {
+    // Log incoming payload for debugging
+    console.log('Register-user payload:', req.body);
+
     const { firstName, lastName, username, password } = req.body;
 
-    const query = `
-        INSERT INTO new_registrations(firstname, lastname, username, password) 
-        VALUES (?, ?, ?, ?)
-    `;
+    const query = `INSERT INTO new_registrations(firstname, lastname, username, password) VALUES (?, ?, ?, ?)`;
 
     db.query(query, [firstName, lastName, username, password], (err, result) => {
         if (err) {
+            // Log full error server-side and return a helpful error message for debugging
             console.error("Registration Error:", err);
-            res.status(500).json({ message: "Registration failed" });
-        } else {
-            res.status(200).json({ message: "Registration successful" });
+            return res.status(500).json({
+                message: "Registration failed",
+                error: err.message,
+                code: err.code
+            });
         }
+
+        res.status(200).json({ message: "Registration successful", id: result.insertId });
     });
 });
 
