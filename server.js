@@ -91,6 +91,73 @@ async function initializeDatabase() {
             });
         });
 
+        // Create new_registrations table (used by register-user)
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS new_registrations (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    firstname VARCHAR(255),
+                    lastname VARCHAR(255),
+                    username VARCHAR(255) UNIQUE,
+                    password VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create programs table (used by add-program)
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS programs (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    event_id INT,
+                    program_name VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create contact_form table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS contact_form (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255),
+                    email VARCHAR(255),
+                    contact VARCHAR(50),
+                    message TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create feedback table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255),
+                    email VARCHAR(255),
+                    message TEXT,
+                    rating INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
         // Create default admin user
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await new Promise((resolve, reject) => {
@@ -175,6 +242,17 @@ app.get('/registrations', (req, res) => {
 
 // Test route
 app.get('/test', (req, res) => res.send('Server is running fine!'));
+
+// DB healthcheck
+app.get('/db-health', (req, res) => {
+    db.query('SELECT 1 + 1 AS result', (err, rows) => {
+        if (err) {
+            console.error('DB health check failed:', err);
+            return res.status(500).json({ healthy: false, error: err.message });
+        }
+        res.json({ healthy: true, result: rows[0].result });
+    });
+});
 
 // Event Registration (from registration.html)
 app.post("/register", (req, res) => {
