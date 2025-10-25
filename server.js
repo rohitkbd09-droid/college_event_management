@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -29,7 +29,9 @@ const db = mysql.createConnection({
     port: process.env.DB_PORT || 18031,
     ssl: {
         rejectUnauthorized: false
-    }
+    },
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 });
 
 // Initialize database
