@@ -125,10 +125,39 @@
       color: #8f94fb;
       text-decoration: none;
     }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 500;
+      transform: translateX(150%);
+      transition: transform 0.5s ease;
+      z-index: 1000;
+    }
+
+    .notification.success {
+      background: linear-gradient(45deg, #00b09b, #96c93d);
+      box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4);
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
   </style>
 </head>
 <body>
 
+  <div id="notification" class="notification">Registration successful!</div>
+  
   <div class="container">
     <div class="registration-form">
       <h2>Create Account</h2>
@@ -192,10 +221,15 @@
         });
 
         const result = await response.text();
-
+console.log('Response:',result);
         if (response.ok) {
-          alert(result);
-          window.location.href = 'index.html';
+          const notification = document.getElementById('notification');
+          notification.classList.add('success', 'show');
+          
+          // Wait for animation to complete before redirecting
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000); // Redirect after 2 seconds
         } else {
           alert(result || 'Registration failed');
         }
