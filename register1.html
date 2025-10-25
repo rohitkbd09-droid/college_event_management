@@ -183,7 +183,9 @@
       }
 
       try {
-        const response = await fetch('http://localhost:3000/register-user', {
+        // Use a relative path so the frontend talks to the same origin
+        // (works locally and when deployed on Render)
+        const response = await fetch('/register-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password, firstName, lastName })
