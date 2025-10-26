@@ -690,5 +690,77 @@
     </script>
     <script src="js/home.js"></script>
 
+    <script>
+        // Intercept contact form submit and show full-page success overlay
+        (function(){
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+            const overlay = document.getElementById('contactSuccess');
+
+            form.addEventListener('submit', async function(e){
+                e.preventDefault();
+
+                const name = (form.querySelector('[name="name"]') || {}).value || '';
+                const email = (form.querySelector('[name="email"]') || {}).value || '';
+                const contact = (form.querySelector('[name="contact"]') || {}).value || '';
+                const message = (form.querySelector('[name="message"]') || {}).value || '';
+
+                // basic validation
+                if (!name || !email || !message) {
+                    alert('Please fill in name, email and message.');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/submit-form', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, contact, message })
+                    });
+
+                    if (res.ok) {
+                        // Show overlay
+                        overlay.classList.add('show');
+
+                        // launch confetti
+                        for (let i=0;i<40;i++) createConfetti();
+
+                        form.reset();
+                    } else {
+                        const text = await res.text().catch(()=>null);
+                        alert(text || 'Submission failed. Please try again later.');
+                    }
+                } catch (err) {
+                    console.error('Contact submit error:', err);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+
+            function createConfetti(){
+                const colors = ['#ff6b6b', '#ffd166', '#06d6a0', '#118ab2', '#b794f4'];
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                const size = Math.random()*10 + 6;
+                el.style.width = size + 'px';
+                el.style.height = size + 'px';
+                el.style.left = Math.random()*100 + 'vw';
+                el.style.top = '-10px';
+                el.style.background = colors[Math.floor(Math.random()*colors.length)];
+                el.style.opacity = '1';
+                el.style.borderRadius = (Math.random()>0.5? '50%':'2px');
+                document.body.appendChild(el);
+
+                const dx = (Math.random()-0.5)*200;
+                const duration = Math.random()*2000 + 1500;
+                el.animate([
+                    { transform: `translateY(0) translateX(0) rotate(0deg)`, opacity:1 },
+                    { transform: `translateY(${window.innerHeight+100}px) translateX(${dx}px) rotate(${Math.random()*720}deg)`, opacity:0 }
+                ], { duration, easing: 'cubic-bezier(.2,.8,.2,1)' });
+
+                setTimeout(()=> el.remove(), duration+100);
+            }
+        })();
+    </script>
+
 </body>
 </html>
