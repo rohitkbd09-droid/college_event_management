@@ -291,38 +291,45 @@ app.post("/register", (req, res) => {
                 code: err.code
             });
         }
+        // Respond immediately so the client isn't blocked by email delivery
+        res.status(200).send('Registration Successful & Emails Sent');
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
-                pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
-            }
-        });
-
-        const userMail = {
-            from: 'srinivasgalla30@gmail.com',
-            to: email,
-            subject: 'College Fest Registration Successful',
-            text: `Hello ${name},\n\nYou have successfully registered for the ${eventType} event.\nSub Events: ${subEventsString}\n\nThank you for registering!\nTeam College Fest`
-        };
-
-        const adminMail = {
-            from: 'srinivasgalla30@gmail.com',
-            to: 'srinivasgalla30@gmail.com',
-            subject: 'New College Fest Registration',
-            text: `New registration received:\n\nName: ${name}\nBranch: ${branch}\nPhone: ${phone}\nEmail: ${email}\nEvent Type: ${eventType}\nSub Events: ${subEventsString}`
-        };
-
-        transporter.sendMail(userMail, (err1) => {
-            if (err1) console.error('Error sending user email:', err1);
-
-            transporter.sendMail(adminMail, (err2) => {
-                if (err2) console.error('Error sending admin email:', err2);
-
-                res.send('Registration Successful & Emails Sent');
+        // Send email notifications asynchronously (do not block response)
+        try {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                    pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
+                }
             });
-        });
+
+            const userMail = {
+                from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
+                to: email,
+                subject: 'College Fest Registration Successful',
+                text: `Hello ${name},\n\nYou have successfully registered for the ${eventType} event.\nSub Events: ${subEventsString}\n\nThank you for registering!\nTeam College Fest`
+            };
+
+            const adminMail = {
+                from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
+                to: process.env.ADMIN_EMAIL || 'srinivasgalla30@gmail.com',
+                subject: 'New College Fest Registration',
+                text: `New registration received:\n\nName: ${name}\nBranch: ${branch}\nPhone: ${phone}\nEmail: ${email}\nEvent Type: ${eventType}\nSub Events: ${subEventsString}`
+            };
+
+            transporter.sendMail(userMail, (err1, info1) => {
+                if (err1) console.error('Error sending user email:', err1);
+                else console.log('User email sent:', info1 && info1.response);
+            });
+
+            transporter.sendMail(adminMail, (err2, info2) => {
+                if (err2) console.error('Error sending admin email:', err2);
+                else console.log('Admin email sent:', info2 && info2.response);
+            });
+        } catch (mailErr) {
+            console.error('Mailer setup error:', mailErr);
+        }
     });
 });
 
