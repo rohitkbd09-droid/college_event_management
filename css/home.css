@@ -386,12 +386,45 @@ body{
 
 /* Responsive fixes for mobile devices to prevent overlapping */
 @media (max-width: 992px) {
-    .navbar{ height: auto; padding: 10px 8px; }
+    .navbar{ 
+        height: auto; 
+        padding: 10px 8px;
+        position: relative;
+    }
+    .navbar ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 0;
+    }
+    .navbar ul li {
+        margin: 5px 10px;
+    }
+    .navbar ul li a {
+        padding: 8px 15px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    .navbar ul li a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
     .logo{ width: auto; }
     .logo img{ width: 90px; height: 90px; }
     .menu{ width: 100%; }
     .menu ul{ justify-content: center; gap: 8px; }
     #main{ height: auto; padding: 40px 12px; clip-path: none; background-attachment: scroll; }
+    
+    /* Improved notification dropdown positioning for mobile */
+    .notification-dropdown {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        width: calc(100% - 20px);
+        max-width: 300px;
+        z-index: 1001;
+    }
     #animate{ font-size: 2.2rem; margin-top: 20px; }
     .detail_para{ font-size: 1.1rem; margin: 18px 12px; }
     .event-container{ 
@@ -450,7 +483,16 @@ body{
 }
 
 @media (max-width: 480px) {
-    .menu ul li a{ font-size: 1.1rem; }
+    .navbar ul {
+        padding: 5px 0;
+    }
+    .navbar ul li {
+        margin: 3px 5px;
+    }
+    .navbar ul li a {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
     .logo img{ width: 70px; height: 70px; }
     .event{ 
         width: calc(100% - 20px);
