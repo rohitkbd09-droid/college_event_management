@@ -17,6 +17,79 @@
       align-items: center;
       height: 100vh;
       margin: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .success-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(66, 183, 245,0.8), rgba(66, 245, 189,0.8));
+      background-size: 400% 400%;
+      animation: gradientShift 6s ease infinite;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.5s ease-in-out;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .success-message {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2rem 4rem;
+      border-radius: 20px;
+      text-align: center;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: all 0.5s ease-out;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: popIn 0.6s ease both;
+    }
+
+    .success-message h3 {
+      color: #2ecc71;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .success-message p {
+      color: #444;
+      font-size: 1.1rem;
+    }
+
+    .success-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .success-overlay.show .success-message {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #f0f;
+      opacity: 0;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes popIn {
+      0% { transform: translateY(30px) scale(0.95); opacity: 0; }
+      60% { transform: translateY(-6px) scale(1.02); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
     }
 
     /* LOGIN BOX STYLES */
@@ -116,6 +189,12 @@
   </style>
 </head>
 <body>
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-message">
+      <h3>Login Successful! 🎉</h3>
+      <p>Welcome back to College Fest</p>
+    </div>
+  </div>
 
   <div class="login-box">
     <h2>Login to College Fest</h2>
@@ -148,8 +227,22 @@
       .then(res => res.json())
       .then(response => {
         if (response.success) {
-          alert(response.message);
-          window.location.href = "home.html";
+          // Show success overlay
+          const overlay = document.getElementById('successOverlay');
+          overlay.classList.add('show');
+          
+          // Create confetti effect
+          for(let i = 0; i < 50; i++) {
+            createConfetti();
+          }
+
+              // Allow clicking overlay to continue immediately
+              overlay.addEventListener('click', () => { window.location.href = 'home.html'; });
+
+              // Redirect after animation
+              setTimeout(() => {
+                window.location.href = "home.html";
+              }, 2200);
         } else {
           alert("Invalid username or password!");
         }
@@ -159,7 +252,40 @@
         alert("Something went wrong.");
       });
     });
-    
+
+    function createConfetti() {
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      
+      // Random position
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.top = -20 + 'px';
+      
+      // Random color
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+      
+      document.body.appendChild(confetti);
+      
+      // Animation
+      confetti.animate([
+        { 
+          transform: `translate(${Math.random() * 100 - 50}px, 0) rotate(0deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate(${Math.random() * 100 - 50}px, 100vh) rotate(${Math.random() * 720}deg)`,
+          opacity: 0
+        }
+      ], {
+        duration: Math.random() * 2000 + 1000,
+        easing: 'cubic-bezier(.37,0,.63,1)'
+      });
+      
+      // Remove confetti element after animation
+      setTimeout(() => confetti.remove(), 3000);
+    }
   </script>
 
 </body>
