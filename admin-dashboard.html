@@ -108,6 +108,9 @@
                     <a class="nav-link" href="#" data-section="sub-events">
                         <i class="bi bi-calendar-event me-2"></i> Sub-Events
                     </a>
+                    <a class="nav-link" href="#" data-section="participants">
+                        <i class="bi bi-people me-2"></i> Participation List
+                    </a>
                     <a class="nav-link" href="#" id="logoutBtn">
                         <i class="bi bi-box-arrow-right me-2"></i> Logout
                     </a>
@@ -169,6 +172,37 @@
                                 </tbody>
                             </table>
                         </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participation List Section -->
+                <div id="participants-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Participation List</h2>
+                        <button class="btn btn-success" onclick="refreshParticipants()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Branch</th>
+                                            <th>Phone</th>
+                                            <th>Event Type</th>
+                                            <th>Sub Events</th>
+                                            <th>Registered At</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="participantsTableBody">
+                                        <!-- Participants will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -264,6 +298,8 @@
                         section === 'categories' ? 'block' : 'none';
                     document.getElementById('sub-events-section').style.display = 
                         section === 'sub-events' ? 'block' : 'none';
+                    document.getElementById('participants-section').style.display = 
+                        section === 'participants' ? 'block' : 'none';
                 }
             });
         });
@@ -381,6 +417,54 @@
                 option.textContent = category.name;
                 select.appendChild(option);
             });
+        });
+
+        // Participation List functionality
+        async function loadParticipants() {
+            try {
+                const response = await fetch('/registrations');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const participants = await response.json();
+                updateParticipantsTable(participants);
+            } catch (error) {
+                console.error('Error loading participants:', error);
+                const tbody = document.getElementById('participantsTableBody');
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #dc3545;">Unable to load participants. Please check your connection.</td></tr>';
+            }
+        }
+
+        function updateParticipantsTable(participants) {
+            const tbody = document.getElementById('participantsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!participants || participants.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No participants registered yet</td></tr>';
+                return;
+            }
+            
+            participants.forEach(participant => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${participant.name || 'N/A'}</td>
+                    <td>${participant.branch || 'N/A'}</td>
+                    <td>${participant.phone || 'N/A'}</td>
+                    <td>${participant.event_type || 'N/A'}</td>
+                    <td>${participant.sub_events || 'N/A'}</td>
+                    <td>${participant.created_at ? new Date(participant.created_at).toLocaleString() : 'N/A'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function refreshParticipants() {
+            loadParticipants();
+        }
+
+        // Load participants when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadParticipants();
         });
     </script>
 </body>

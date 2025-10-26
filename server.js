@@ -108,6 +108,24 @@ async function initializeDatabase() {
             });
         });
 
+        // Create notifications table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    title VARCHAR(255) NOT NULL,
+                    message TEXT NOT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES new_registrations(id) ON DELETE CASCADE
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
         // Create programs table (used by add-program)
         await new Promise((resolve, reject) => {
             db.query(`
@@ -353,6 +371,37 @@ app.post('/login', (req, res) => {
 });
 
 // Register User Account (from register.html)
+// Get user notifications
+app.get('/api/notifications/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const query = `
+        SELECT * FROM notifications 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC`;
+    
+    db.query(query, [userId], (err, notifications) => {
+        if (err) {
+            console.error('Error fetching notifications:', err);
+            return res.status(500).json({ error: 'Failed to fetch notifications' });
+        }
+        res.json(notifications);
+    });
+});
+
+// Mark notification as read
+app.put('/api/notifications/:notificationId', (req, res) => {
+    const notificationId = req.params.notificationId;
+    const query = 'UPDATE notifications SET is_read = TRUE WHERE id = ?';
+    
+    db.query(query, [notificationId], (err) => {
+        if (err) {
+            console.error('Error updating notification:', err);
+            return res.status(500).json({ error: 'Failed to update notification' });
+        }
+        res.json({ message: 'Notification marked as read' });
+    });
+});
+
 app.post("/register-user", (req, res) => {
     // Log incoming payload for debugging
     console.log('Register-user payload:', req.body);
@@ -380,8 +429,66 @@ app.post("/register-user", (req, res) => {
 app.post('/add-event', (req, res) => {
     const { eventName, eventDate } = req.body;
     const sql = 'INSERT INTO events (name, event_date) VALUES (?, ?)';
-    db.query(sql, [eventName, eventDate], (err, result) => {
+    db.query(sql, [eventName, eventDate], async (err, result) => {
         if (err) return res.status(500).send('Error inserting event');
+
+        // Get all registered users
+        db.query('SELECT id, firstname, email FROM new_registrations', async (err, users) => {
+            if (err) {
+                console.error('Error fetching users:', err);
+                return;
+            }
+
+            // Insert notifications for all users
+            const notificationPromises = users.map(user => {
+                return new Promise((resolve, reject) => {
+                    const notification = {
+                        user_id: user.id,
+                        title: 'New Event Added!',
+                        message: `A new event "${eventName}" has been added to the college fest, scheduled for ${eventDate}. Check it out!`
+                    };
+                    
+                    db.query(
+                        'INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)',
+                        [notification.user_id, notification.title, notification.message],
+                        (err) => {
+                            if (err) reject(err);
+                            else resolve();
+                        }
+                    );
+
+                    // Send email notification
+                    try {
+                        const transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                                user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                                pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
+                            }
+                        });
+
+                        const mailOptions = {
+                            from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
+                            to: user.email,
+                            subject: 'New College Fest Event Added!',
+                            text: `Hello ${user.firstname},\n\nA new event "${eventName}" has been added to the college fest, scheduled for ${eventDate}.\n\nCheck out the website for more details and registration!\n\nBest regards,\nCollege Fest Team`
+                        };
+
+                        transporter.sendMail(mailOptions);
+                    } catch (mailErr) {
+                        console.error('Error sending email notification:', mailErr);
+                    }
+                });
+            });
+
+            try {
+                await Promise.all(notificationPromises);
+                console.log('Notifications sent to all users');
+            } catch (notifErr) {
+                console.error('Error sending notifications:', notifErr);
+            }
+        });
+
         res.send('Event added successfully');
     });
 });
