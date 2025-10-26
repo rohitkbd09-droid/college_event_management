@@ -74,12 +74,18 @@
   </table>
 
   <script>
-    fetch('http://localhost:3000/registrations')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Fetched data:", data); // Helpful debug log
+    // Use relative API path so this works when deployed
+    const REG_API = '/registrations';
+
+    async function loadRegistrations() {
+      try {
+        const res = await fetch(REG_API);
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const data = await res.json();
+        console.log('Fetched data:', data);
         const tbody = document.querySelector('#registrationTable tbody');
-        if (!data.length) {
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
           tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No registrations found</td></tr>';
           return;
         }
@@ -95,10 +101,18 @@
           `;
           tbody.appendChild(tr);
         });
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Error fetching registrations:', err);
-      });
+        const tbody = document.querySelector('#registrationTable tbody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Unable to load registrations</td></tr>';
+      }
+    }
+
+    // Initial load
+    loadRegistrations();
+
+    // Poll every 5 seconds to show new registrations without requiring manual refresh
+    setInterval(loadRegistrations, 5000);
   </script>
 </body>
 </html>

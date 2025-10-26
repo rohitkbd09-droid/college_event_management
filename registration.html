@@ -330,10 +330,10 @@
 
                         form.reset();
                         
-                        // Redirect after animation
+                        // Redirect after animation to the participation list so the user can see their entry
                         setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 3000);
+                            window.location.href = 'registrationlist.html';
+                        }, 2000);
                     } else {
                         const errorMessage = await response.json().catch(() => ({ error: result }));
                         throw new Error(errorMessage.error || 'Registration failed');
