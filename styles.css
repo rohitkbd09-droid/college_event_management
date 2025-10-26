@@ -29,6 +29,9 @@ body {
     width: 100%;
     max-width: 400px;
     padding: 20px;
+    margin: 20px;
+    overflow-y: auto;
+    max-height: 90vh;
 }
 
 /* Registration Form */
@@ -98,6 +101,47 @@ input:focus {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Event Options Styling */
+.event-options {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.event-options h3 {
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    transition: background 0.3s ease;
+}
+
+.checkbox-container:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+@media (hover: none) {
+    .submit-btn:hover {
+        transform: none;
+        box-shadow: var(--shadow);
+    }
+}
+
 /* Login and Register Links */
 .login-link,
 .register-link {
@@ -117,6 +161,62 @@ input:focus {
 .login-link a:hover,
 .register-link a:hover {
     color: var(--secondary-color);
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 480px) {
+    body {
+        padding: 10px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) fixed;
+    }
+
+    .container {
+        padding: 10px;
+        margin: 10px;
+        max-width: 100%;
+    }
+
+    .registration-form,
+    .login-form {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .submit-btn {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .event-options {
+        margin: 10px 0;
+    }
+
+    .checkbox-group {
+        margin: 5px 0;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+    body {
+        min-height: -webkit-fill-available;
+    }
 }
 
 /* Animations */
