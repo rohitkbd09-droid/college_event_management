@@ -38,6 +38,33 @@
             100% { transform: translateY(0);}
         }
 
+        /* Success overlay styles (same visual as contact) */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(255,138,128,0.95), rgba(255,213,128,0.95));
+            color: #fff;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .success-overlay.show { opacity: 1; visibility: visible; }
+
+        .success-card { background: rgba(255,255,255,0.12); padding: 32px 28px; border-radius: 14px; backdrop-filter: blur(6px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+        .success-card h2 { margin: 0 0 8px; color: #fff; font-size: 1.8rem; }
+
+        .success-card p { color: #fff; opacity: 0.95; margin: 0; }
+
+        .confetti { position: absolute; width: 8px; height: 8px; opacity: 0; }
+
         .feedback-button-container {
             text-align: center;
             margin: 50px 0;
@@ -144,7 +171,7 @@
     <!-- Feedback Section -->
     <section id="feedback">
         <h1 class="heading">Event Feedback</h1>
-        <form action="/submit-feedback" method="POST" class="feedback-form">
+    <form id="feedbackForm" action="/submit-feedback" method="POST" class="feedback-form">
             <div class="inputs">
                 <input type="text" name="name" placeholder="Enter your Name" required>
             </div>
@@ -165,7 +192,7 @@
                 </div>
             </div>
             <div id="btn">
-                <input type="submit" value="Submit Feedback">
+                <button type="submit">Submit Feedback</button>
             </div>
         </form>
     </section>
@@ -177,5 +204,62 @@
         </div>
     </footer>
 
+    <!-- Success overlay for feedback -->
+    <div id="feedbackSuccess" class="success-overlay" aria-hidden="true">
+        <div class="success-card">
+            <h2>Feedback submitted successfully</h2>
+            <p>Thanks for your feedback — we appreciate it!</p>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const form = document.getElementById('feedbackForm');
+            if (!form) return;
+            const overlay = document.getElementById('feedbackSuccess');
+
+            form.addEventListener('submit', async function(e){
+                e.preventDefault();
+                const name = (form.querySelector('[name="name"]') || {}).value || '';
+                const email = (form.querySelector('[name="email"]') || {}).value || '';
+                const message = (form.querySelector('[name="message"]') || {}).value || '';
+                const rating = form.querySelector('[name="rating"]:checked') ? form.querySelector('[name="rating"]:checked').value : '';
+
+                if (!name || !email || !message) { alert('Please fill name, email and feedback message.'); return; }
+
+                try {
+                    const res = await fetch('/submit-feedback', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, message, rating })
+                    });
+
+                    if (res.ok) {
+                        overlay.classList.add('show');
+                        for (let i=0;i<40;i++) createConfetti();
+                        form.reset();
+                    } else {
+                        const text = await res.text().catch(()=>null);
+                        alert(text || 'Submission failed.');
+                    }
+                } catch (err) {
+                    console.error('Feedback submit error:', err);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+
+            function createConfetti(){
+                const colors = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#b794f4'];
+                const el = document.createElement('div'); el.className='confetti';
+                const size = Math.random()*8 + 6; el.style.width = el.style.height = size+'px';
+                el.style.left = Math.random()*100 + 'vw'; el.style.top = '-10px';
+                el.style.background = colors[Math.floor(Math.random()*colors.length)];
+                el.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+                document.body.appendChild(el);
+                const dx = (Math.random()-0.5)*200; const duration = Math.random()*2000 + 1200;
+                el.animate([{ transform: 'translateY(0) translateX(0)', opacity:1 }, { transform: `translateY(${window.innerHeight+100}px) translateX(${dx}px) rotate(${Math.random()*720}deg)`, opacity:0 }], { duration, easing:'cubic-bezier(.2,.8,.2,1)' });
+                setTimeout(()=> el.remove(), duration+100);
+            }
+        })();
+    </script>
 </body>
 </html>
