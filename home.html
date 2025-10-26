@@ -187,10 +187,10 @@
 
         /* Hamburger styles */
         .hamburger-menu {
-            position: absolute;
+            position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 999;
+            z-index: 1000;
         }
 
         .hamburger {
@@ -198,14 +198,16 @@
             cursor: pointer;
             color: #ffffff;
             background: linear-gradient(135deg, #00c9ff, #92fe9d);
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .hamburger:hover {
