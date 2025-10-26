@@ -5,8 +5,98 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="stylesheet" href="css/home.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="js/notifications.js" defer></script>
     <title>College Fest</title>
     <style>
+        /* Notification styles */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            margin-right: 20px;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4b4b;
+            color: white;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 8px;
+            text-align: center;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-item .title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .notification-item .message {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+
+        .notification-item .time {
+            color: #999;
+            font-size: 0.8em;
+        }
+
+        .notification-empty {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         .register-button-container {
             text-align: center;
             margin-top: 40px;
@@ -323,21 +413,25 @@
         </div>
     </div>
 
-    <nav class="navbar">
-        <div class="logo">
-            <img src="https://jntuwing.in/wp-content/uploads/2022/02/71B14E20-F721-4482-B367-C06C9CF82633-e1645463061154.png" alt="logo">
-        </div>
-        <div class="menu">
-            <ul>
-                <li><a href="#">home</a></li>
-                <li><a href="#all-event">events</a></li>
-                <li><a href="#sponser">our sponser</a></li>
-                <li><a href="#contact-about">contact us</a></li>
-                <li><a href="#contact-about">About</a></li>
-                <li><a href="admin-dashboard.html">Admin</a></li>
-                <li><a href="registrationlist.html">Participation List</a></li>
-            </ul>
-        </div>
+        <nav class="navbar">
+        <input type="checkbox" id="check">
+        <label for="check" class="checkbtn">
+            <i class="fas fa-bars"></i>
+        </label>
+        <label class="logo">College Fest</label>
+        <ul>
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="feedback.html">Feedback</a></li>
+            <li>
+                <div class="notification-icon" id="notificationIcon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-empty">Loading notifications...</div>
+                    </div>
+                </div>
+            </li>
+        </ul>
     </nav>
     <section id="main">
         <div id="animate">

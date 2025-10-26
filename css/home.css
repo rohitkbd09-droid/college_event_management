@@ -394,9 +394,39 @@ body{
     #main{ height: auto; padding: 40px 12px; clip-path: none; background-attachment: scroll; }
     #animate{ font-size: 2.2rem; margin-top: 20px; }
     .detail_para{ font-size: 1.1rem; margin: 18px 12px; }
-    .event-container{ flex-direction: row; flex-wrap: wrap; gap: 18px; align-items: stretch; justify-content: center; padding: 20px 10px; height: auto; }
-    .event{ width: 44%; height: auto; padding: 18px; margin: 0; }
-    .event ul li{ font-size: 1.1rem; }
+    .event-container{ 
+        flex-direction: row; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        align-items: flex-start; 
+        justify-content: center; 
+        padding: 15px; 
+        height: auto; 
+        background: linear-gradient(160deg,#2b434a 55%,#fff 0%);
+    }
+    .event{ 
+        width: calc(33.33% - 20px); 
+        min-height: 280px;
+        padding: 15px;
+        margin: 0;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .event ul { 
+        padding-left: 20px;
+        margin: 10px 0;
+    }
+    .event ul li{ 
+        font-size: 1rem;
+        line-height: 1.4;
+        margin-bottom: 5px;
+    }
+    .event-img{
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
     .sponserlist{ flex-direction: row; flex-wrap: wrap; height: auto; gap: 14px; padding: 20px; }
     #sponser{ height: auto; padding: 20px 0; }
     #contact-about{ flex-direction: column; height: auto; padding: 30px 10px; gap: 12px; }
@@ -405,11 +435,40 @@ body{
     #btn input, #btn button { width: 140px; }
 }
 
+@media (max-width: 768px) {
+    .event {
+        width: calc(50% - 15px);
+        min-height: 250px;
+    }
+    .event ul li {
+        font-size: 0.95rem;
+    }
+    .event-img {
+        width: 70px;
+        height: 70px;
+    }
+}
+
 @media (max-width: 480px) {
     .menu ul li a{ font-size: 1.1rem; }
     .logo img{ width: 70px; height: 70px; }
-    .event{ width: 90%; }
-    .event-container{ padding: 10px; }
+    .event{ 
+        width: calc(100% - 20px);
+        min-height: 220px;
+        margin-bottom: 15px;
+    }
+    .event-container{ 
+        padding: 10px;
+        gap: 8px;
+    }
+    .event ul li {
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+    .event-img {
+        width: 60px;
+        height: 60px;
+    }
     .detail_para{ font-size: 1rem; }
     .con-abh1{ font-size: 1.6rem; }
     .inputs input, .inputs textarea { width: 95%; margin: 8px auto; }
