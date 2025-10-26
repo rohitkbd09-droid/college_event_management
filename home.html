@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="js/notifications.js" defer></script>
@@ -419,23 +420,33 @@
             <i class="fas fa-bars"></i>
         </label>
         <label class="logo">College Fest</label>
-        <ul>
-            <li><a href="#" class="active">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#event">Events</a></li>
-            <li><a href="#sponser">Sponsors</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="feedback.html">Feedback</a></li>
-            <li>
-                <div class="notification-icon" id="notificationIcon">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notificationBadge">0</span>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="notification-empty">Loading notifications...</div>
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#event">Events</a></li>
+                <li><a href="#sponser">Sponsors</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="feedback.html">Feedback</a></li>
+            </ul>
+            <ul class="nav-actions">
+                <li>
+                    <div class="notification-icon" id="notificationIcon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-empty">Loading notifications...</div>
+                        </div>
                     </div>
-                </div>
-            </li>
-        </ul>
+                </li>
+                <li>
+                    <a href="admin-login.html" class="admin-btn">
+                        <i class="fas fa-user-shield"></i>
+                        Admin
+                    </a>
+                </li>
+            </ul>
+        </div>
     </nav>
     <section id="main">
         <div id="animate">
