@@ -39,6 +39,48 @@
             100% { transform: translateY(0);}
         }
 
+            /* Contact form success overlay styles */
+            .success-overlay {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(135deg, rgba(72, 163, 255, 0.95), rgba(147, 99, 255, 0.95));
+                color: #fff;
+                z-index: 9999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.4s ease, visibility 0.4s ease;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .success-overlay.show {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .success-card {
+                background: rgba(255,255,255,0.12);
+                padding: 40px 30px;
+                border-radius: 16px;
+                backdrop-filter: blur(6px);
+                box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+                max-width: 720px;
+                width: 100%;
+            }
+
+            .success-card h2 {
+                font-size: 2rem;
+                margin-bottom: 8px;
+                color: #fff;
+            }
+
+            .success-card p { color: #f0f8ff; margin: 0 0 12px; }
+
+            .confetti { position: absolute; width: 10px; height: 10px; opacity: 0; }
+
         #animate {
             font-size: 28px;
             font-weight: bold;
@@ -404,7 +446,7 @@
 
         <div class="contact">
             <h1 class="con-abh1">Contact</h1>
-            <form action="/submit-form" method="POST">
+            <form id="contactForm" action="/submit-form" method="POST">
                 <div class="inputs">
                     <input type="text" name="name" placeholder="Enter your Name" required>
                 </div>
@@ -418,7 +460,7 @@
                     <textarea name="message" cols="30" rows="10" placeholder="Message" required></textarea>
                 </div>
                 <div id="btn">
-                    <input type="submit" value="Submit">
+                    <button type="submit">Submit</button>
                 </div>
             </form>
         </div>
@@ -431,6 +473,14 @@
             Copyright © www.jntuh2025.com All rights reserved!
         </div>
     </footer>
+
+    <!-- Success overlay for contact form -->
+    <div id="contactSuccess" class="success-overlay" aria-hidden="true">
+        <div class="success-card">
+            <h2>Form submitted successfully</h2>
+            <p>Thank you for contacting us. We will get back to you shortly.</p>
+        </div>
+    </div>
 
     <div id="upcoming-events-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(20,24,40,0.95); z-index:9999; overflow:auto;">
         <div style="max-width:800px; margin:60px auto; background:rgba(36,40,59,0.98); border-radius:24px; box-shadow:0 8px 32px #00c9ff55; padding:32px 24px; position:relative;">
