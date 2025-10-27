@@ -468,7 +468,11 @@
         // Load categories from database
         async function loadCategories() {
             try {
-                const response = await fetch('/api/categories');
+                const response = await fetch('/api/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
                 if (response.ok) {
                     categories = await response.json();
                     updateCategoriesTable();
@@ -481,7 +485,11 @@
         // Load sub-events from database
         async function loadSubEvents() {
             try {
-                const response = await fetch('/api/events');
+                const response = await fetch('/api/events', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
                 if (response.ok) {
                     subEvents = await response.json();
                     updateSubEventsTable();
