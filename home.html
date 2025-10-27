@@ -130,6 +130,11 @@
             100% { transform: translateY(0);}
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
             /* Contact form success overlay styles */
             .success-overlay {
                 position: fixed;
@@ -454,47 +459,22 @@
     </section>
     <section id="all-event">
         <h1 class="heading souvenir-title" style="text-align:center; color:#2563eb; font-size:2.5rem; margin: 30px 0 40px 0; letter-spacing:2px; text-shadow: 2px 2px 8px #b2bec3;"><strong>EVENTS SOUVENIR</strong></h1>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
-            <div class="event-card">
-                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Sports</h2>
-                <img src="https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg" alt="sports" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
-                <ul style="text-align:left; margin-top:10px;">
-                    <li>Race (100m)</li>
-                    <li>Race (200m)</li>
-                    <li>Badminton</li>
-                    <li>Chess</li>
-                    <li>Table Tennis</li>
-                </ul>
+        
+        <!-- Dynamic Events Container -->
+        <div id="dynamic-events-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+            <!-- Events will be dynamically loaded here -->
+            <div id="loading-message" style="text-align: center; width: 100%; padding: 40px; color: #666;">
+                <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
+                <p style="margin-top: 20px; font-size: 1.2rem;">Loading events...</p>
             </div>
-            <div class="event-card">
-                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Cultural</h2>
-                <img src="https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3" alt="cultural" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
-                <ul style="text-align:left; margin-top:10px;">
-                    <li>Dance</li>
-                    <li>Poetry Slams</li>
-                    <li>Singing</li>
-                </ul>
-            </div>
-            <div class="event-card">
-                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Technical</h2>
-                <img src="https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg" alt="technical" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
-                <ul style="text-align:left; margin-top:10px;">
-                    <li>Coding</li>
-                    <li>Group Discussion</li>
-                    <li>Quiz</li>
-                    <li>Tech Project</li>
-                </ul>
-            </div>
-            <div class="event-card">
-                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Other</h2>
-                <img src="https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3" alt="other" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
-                <ul style="text-align:left; margin-top:10px;">
-                    <li>Art Exhibition</li>
-                    <li>Painting</li>
-                    <li>Rangoli</li>
-                    <li>Sketching</li>
-                </ul>
-            </div>
+        </div>
+        
+        <!-- No Events Message (hidden by default) -->
+        <div id="no-events-message" style="display: none; text-align: center; padding: 60px 20px; color: #666;">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📅</div>
+            <h3 style="color: #333; margin-bottom: 15px;">No Events Available Yet</h3>
+            <p style="font-size: 1.1rem; line-height: 1.6;">Events will appear here once the admin adds them to the system.</p>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 20px;">Check back later or contact the admin for more information.</p>
         </div>
         <div class="register-button-container">
             <a href="registration.html" class="register-button">Register Now</a>
@@ -655,64 +635,116 @@
 
         // Load and display events from database
         async function loadAndDisplayEvents() {
+            const container = document.getElementById('dynamic-events-container');
+            const loadingMessage = document.getElementById('loading-message');
+            const noEventsMessage = document.getElementById('no-events-message');
+            
             try {
                 const response = await fetch('/api/user-events');
                 if (!response.ok) throw new Error('Failed to load events');
                 const events = await response.json();
                 
-                // Update the static event cards with dynamic data
-                updateEventCards(events);
+                // Hide loading message
+                loadingMessage.style.display = 'none';
+                
+                // Check if there are any events
+                const hasEvents = Object.keys(events).some(category => events[category].length > 0);
+                
+                if (!hasEvents) {
+                    // Show no events message
+                    noEventsMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Create dynamic event cards
+                createDynamicEventCards(events);
                 
             } catch (error) {
                 console.error('Error loading events:', error);
-                // Fallback to static content if API fails
-                console.log('Using fallback static events');
+                loadingMessage.style.display = 'none';
+                noEventsMessage.style.display = 'block';
             }
         }
 
-        // Update event cards with dynamic data from database
-        function updateEventCards(events) {
-            const eventCards = document.querySelectorAll('.event-card');
+        // Create dynamic event cards based on database data
+        function createDynamicEventCards(events) {
+            const container = document.getElementById('dynamic-events-container');
             
-            eventCards.forEach(card => {
-                const category = card.querySelector('h2').textContent.toLowerCase();
-                const eventList = card.querySelector('ul');
-                
-                // Clear existing list items
-                eventList.innerHTML = '';
-                
-                // Add events from database for this category
-                if (events[category] && events[category].length > 0) {
+            // Clear container
+            container.innerHTML = '';
+            
+            // Category images mapping
+            const categoryImages = {
+                'sports': 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg',
+                'cultural': 'https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3',
+                'technical': 'https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg',
+                'other': 'https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3'
+            };
+            
+            // Create event cards for each category that has events
+            Object.keys(events).forEach(category => {
+                if (events[category].length > 0) {
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'event-card';
+                    eventCard.style.cssText = `
+                        background: #fff;
+                        border-radius: 12px;
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                        padding: 30px 25px;
+                        width: 270px;
+                        text-align: center;
+                        transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
+                        will-change: transform;
+                    `;
+                    
+                    // Add hover effect
+                    eventCard.addEventListener('mouseenter', () => {
+                        eventCard.style.transform = 'translateY(-20px) scale(1.04)';
+                        eventCard.style.boxShadow = '0 16px 32px rgba(0,0,0,0.18)';
+                        eventCard.style.zIndex = '2';
+                    });
+                    
+                    eventCard.addEventListener('mouseleave', () => {
+                        eventCard.style.transform = 'translateY(0) scale(1)';
+                        eventCard.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                        eventCard.style.zIndex = '1';
+                    });
+                    
+                    // Category title
+                    const categoryTitle = document.createElement('h2');
+                    categoryTitle.style.cssText = 'font-size: 1.5rem; margin-bottom: 10px; color: #333;';
+                    categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                    
+                    // Category image
+                    const categoryImage = document.createElement('img');
+                    categoryImage.src = categoryImages[category] || categoryImages['other'];
+                    categoryImage.alt = category;
+                    categoryImage.style.cssText = 'width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 8px 24px #00c9ff88);';
+                    
+                    // Events list
+                    const eventsList = document.createElement('ul');
+                    eventsList.style.cssText = 'text-align: left; margin-top: 10px; padding: 0; list-style: none;';
+                    
                     events[category].forEach(event => {
                         const listItem = document.createElement('li');
+                        listItem.style.cssText = 'display: block; margin: 6px 0; text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px;';
                         listItem.innerHTML = `
-                            <strong>${event.name}</strong>
-                            ${event.date ? `<br><small style="color: #666;">📅 ${new Date(event.date).toLocaleDateString()}</small>` : ''}
-                            ${event.description ? `<br><small style="color: #888;">${event.description}</small>` : ''}
+                            <strong style="color: #333; display: block; margin-bottom: 4px;">${event.name}</strong>
+                            ${event.date ? `<small style="color: #666; display: block;">📅 ${new Date(event.date).toLocaleDateString()}</small>` : ''}
+                            ${event.description ? `<small style="color: #888; display: block; margin-top: 2px; font-style: italic;">${event.description}</small>` : ''}
                         `;
-                        eventList.appendChild(listItem);
+                        eventsList.appendChild(listItem);
                     });
-                } else {
-                    // Show default events if no database events found
-                    const defaultEvents = getDefaultEvents(category);
-                    defaultEvents.forEach(eventName => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = eventName;
-                        eventList.appendChild(listItem);
-                    });
+                    
+                    // Assemble the card
+                    eventCard.appendChild(categoryTitle);
+                    eventCard.appendChild(categoryImage);
+                    eventCard.appendChild(eventsList);
+                    
+                    // Add to container
+                    container.appendChild(eventCard);
                 }
             });
-        }
-
-        // Get default events for each category
-        function getDefaultEvents(category) {
-            const defaultEvents = {
-                'sports': ['Race (100m)', 'Race (200m)', 'Badminton', 'Chess', 'Table Tennis'],
-                'cultural': ['Dance', 'Poetry Slams', 'Singing'],
-                'technical': ['Coding', 'Group Discussion', 'Quiz', 'Tech Project'],
-                'other': ['Art Exhibition', 'Painting', 'Rangoli', 'Sketching']
-            };
-            return defaultEvents[category] || [];
         }
 
         // Load events when page loads
