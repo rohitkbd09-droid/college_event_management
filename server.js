@@ -325,15 +325,71 @@ app.post("/register", (req, res) => {
             const userMail = {
                 from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
                 to: email,
-                subject: 'College Fest Registration Successful',
-                text: `Hello ${name},\n\nYou have successfully registered for the ${eventType} event.\nSub Events: ${subEventsString}\n\nThank you for registering!\nTeam College Fest`
+                subject: '🎉 College Fest Registration Confirmed!',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                        <div style="background: linear-gradient(135deg, #00c9ff, #92fe9d); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Registration Successful!</h1>
+                        </div>
+                        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <h2 style="color: #333; margin-top: 0;">Hello ${name}!</h2>
+                            <p style="color: #666; font-size: 16px; line-height: 1.6;">Congratulations! You have successfully registered for our College Fest events.</p>
+                            
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="color: #333; margin-top: 0;">📋 Registration Details:</h3>
+                                <p style="margin: 5px 0;"><strong>Name:</strong> ${name}</p>
+                                <p style="margin: 5px 0;"><strong>Branch:</strong> ${branch}</p>
+                                <p style="margin: 5px 0;"><strong>Event Type:</strong> ${eventType}</p>
+                                <p style="margin: 5px 0;"><strong>Selected Events:</strong> ${subEventsString}</p>
+                                <p style="margin: 5px 0;"><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
+                            </div>
+                            
+                            <p style="color: #666; font-size: 16px; line-height: 1.6;">We're excited to have you participate in our College Fest! Stay tuned for more updates and event schedules.</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="http://localhost:3000" style="background: linear-gradient(135deg, #00c9ff, #92fe9d); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">Visit Our Website</a>
+                            </div>
+                            
+                            <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">Best regards,<br>College Fest Team</p>
+                        </div>
+                    </div>
+                `
             };
 
             const adminMail = {
                 from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
                 to: process.env.ADMIN_EMAIL || 'srinivasgalla30@gmail.com',
-                subject: 'New College Fest Registration',
-                text: `New registration received:\n\nName: ${name}\nBranch: ${branch}\nPhone: ${phone}\nEmail: ${email}\nEvent Type: ${eventType}\nSub Events: ${subEventsString}`
+                subject: '🔔 New College Fest Registration Received',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                        <div style="background: linear-gradient(135deg, #ff6b6b, #ffa726); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: white; margin: 0; font-size: 28px;">🔔 New Registration!</h1>
+                        </div>
+                        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <h2 style="color: #333; margin-top: 0;">New Student Registration</h2>
+                            <p style="color: #666; font-size: 16px; line-height: 1.6;">A new student has registered for College Fest events.</p>
+                            
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="color: #333; margin-top: 0;">👤 Student Information:</h3>
+                                <p style="margin: 5px 0;"><strong>Name:</strong> ${name}</p>
+                                <p style="margin: 5px 0;"><strong>Branch:</strong> ${branch}</p>
+                                <p style="margin: 5px 0;"><strong>Phone:</strong> ${phone}</p>
+                                <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                                <p style="margin: 5px 0;"><strong>Event Type:</strong> ${eventType}</p>
+                                <p style="margin: 5px 0;"><strong>Selected Events:</strong> ${subEventsString}</p>
+                                <p style="margin: 5px 0;"><strong>Registration Time:</strong> ${new Date().toLocaleString()}</p>
+                            </div>
+                            
+                            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <p style="margin: 0; color: #1976d2; font-weight: bold;">📊 Quick Actions:</p>
+                                <p style="margin: 5px 0; color: #666;">• View all registrations in admin dashboard</p>
+                                <p style="margin: 5px 0; color: #666;">• Contact student if needed: <a href="mailto:${email}" style="color: #1976d2;">${email}</a></p>
+                            </div>
+                            
+                            <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">Admin Dashboard - College Fest Management System</p>
+                        </div>
+                    </div>
+                `
             };
 
             transporter.sendMail(userMail, (err1, info1) => {
