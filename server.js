@@ -258,6 +258,46 @@ app.get('/registrations', (req, res) => {
     });
 });
 
+// Get events for users (public endpoint)
+app.get('/api/user-events', (req, res) => {
+    const sql = `
+        SELECT 
+            e.id,
+            e.name,
+            e.event_date,
+            e.description,
+            e.category,
+            e.created_at
+        FROM events e 
+        WHERE e.category IS NOT NULL 
+        ORDER BY e.event_date ASC, e.created_at DESC
+    `;
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching events for users:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        
+        // Group events by category
+        const eventsByCategory = {};
+        results.forEach(event => {
+            const category = event.category || 'other';
+            if (!eventsByCategory[category]) {
+                eventsByCategory[category] = [];
+            }
+            eventsByCategory[category].push({
+                name: event.name,
+                date: event.event_date,
+                description: event.description,
+                id: event.id
+            });
+        });
+        
+        res.json(eventsByCategory);
+    });
+});
+
 // Test route
 app.get('/test', (req, res) => res.send('Server is running fine!'));
 
@@ -764,6 +804,92 @@ app.post('/api/admin/login', (req, res) => {
 // Protected admin routes
 app.get('/api/admin/dashboard', verifyAdmin, (req, res) => {
     res.json({ message: 'Welcome to admin dashboard' });
+});
+
+// Send notifications to all users
+app.post('/api/notify-users', verifyAdmin, (req, res) => {
+    const { type, title, message, eventName, eventDate, categoryName } = req.body;
+    
+    // Get all registered users
+    db.query('SELECT email, firstname FROM new_registrations WHERE email IS NOT NULL', async (err, users) => {
+        if (err) {
+            console.error('Error fetching users for notifications:', err);
+            return res.status(500).json({ error: 'Failed to fetch users' });
+        }
+
+        if (users.length === 0) {
+            return res.json({ message: 'No users to notify' });
+        }
+
+        try {
+            const transporter = nodemailer.createTransporter({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                    pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
+                }
+            });
+
+            // Send emails to all users
+            const emailPromises = users.map(user => {
+                const mailOptions = {
+                    from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
+                    to: user.email,
+                    subject: `🎉 ${title}`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                            <div style="background: linear-gradient(135deg, #00c9ff, #92fe9d); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                                <h1 style="color: white; margin: 0; font-size: 28px;">🎉 ${title}</h1>
+                            </div>
+                            <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <h2 style="color: #333; margin-top: 0;">Hello ${user.firstname}!</h2>
+                                <p style="color: #666; font-size: 16px; line-height: 1.6;">${message}</p>
+                                
+                                ${eventName && eventDate ? `
+                                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                        <h3 style="color: #333; margin-top: 0;">📅 Event Details:</h3>
+                                        <p style="margin: 5px 0;"><strong>Event:</strong> ${eventName}</p>
+                                        <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(eventDate).toLocaleDateString()}</p>
+                                    </div>
+                                ` : ''}
+                                
+                                ${categoryName ? `
+                                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                        <p style="margin: 0; color: #1976d2; font-weight: bold;">🏷️ New Category: ${categoryName}</p>
+                                    </div>
+                                ` : ''}
+                                
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="http://localhost:3000" style="background: linear-gradient(135deg, #00c9ff, #92fe9d); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">Visit Our Website</a>
+                                </div>
+                                
+                                <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">Best regards,<br>College Fest Team</p>
+                            </div>
+                        </div>
+                    `
+                };
+
+                return new Promise((resolve, reject) => {
+                    transporter.sendMail(mailOptions, (err, info) => {
+                        if (err) {
+                            console.error(`Error sending email to ${user.email}:`, err);
+                            reject(err);
+                        } else {
+                            console.log(`Email sent to ${user.email}:`, info.response);
+                            resolve(info);
+                        }
+                    });
+                });
+            });
+
+            await Promise.all(emailPromises);
+            res.json({ message: `Notifications sent to ${users.length} users` });
+            
+        } catch (error) {
+            console.error('Error sending notifications:', error);
+            res.status(500).json({ error: 'Failed to send notifications' });
+        }
+    });
 });
 
 // Error handling middleware

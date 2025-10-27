@@ -304,28 +304,68 @@
             });
         });
 
-        // Sample data (in a real application, this would come from a database)
-        let categories = JSON.parse(localStorage.getItem('categories')) || [];
-        let subEvents = JSON.parse(localStorage.getItem('subEvents')) || [];
+        // Load data from database
+        let categories = [];
+        let subEvents = [];
+
+        // Load categories from database
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                if (response.ok) {
+                    categories = await response.json();
+                    updateCategoriesTable();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Load sub-events from database
+        async function loadSubEvents() {
+            try {
+                const response = await fetch('/api/events');
+                if (response.ok) {
+                    subEvents = await response.json();
+                    updateSubEventsTable();
+                }
+            } catch (error) {
+                console.error('Error loading sub-events:', error);
+            }
+        }
 
         // Category management
-        document.getElementById('saveCategoryBtn').addEventListener('click', function() {
+        document.getElementById('saveCategoryBtn').addEventListener('click', async function() {
             const name = document.getElementById('categoryName').value;
             const description = document.getElementById('categoryDescription').value;
 
             if (name) {
-                categories.push({
-                    id: Date.now(),
-                    name: name,
-                    description: description
-                });
-                
-                // Save to localStorage
-                localStorage.setItem('categories', JSON.stringify(categories));
-                
-                updateCategoriesTable();
-                bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
-                document.getElementById('addCategoryForm').reset();
+                try {
+                    const response = await fetch('/api/categories', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                        },
+                        body: JSON.stringify({ name, description })
+                    });
+
+                    if (response.ok) {
+                        const newCategory = await response.json();
+                        categories.push(newCategory);
+                        updateCategoriesTable();
+                        bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+                        document.getElementById('addCategoryForm').reset();
+                        
+                        // Send email notifications to all users
+                        await notifyUsersAboutNewCategory(name, description);
+                    } else {
+                        alert('Failed to add category');
+                    }
+                } catch (error) {
+                    console.error('Error adding category:', error);
+                    alert('Error adding category');
+                }
             }
         });
 
@@ -348,33 +388,92 @@
             });
         }
 
-        function deleteCategory(id) {
-            categories = categories.filter(c => c.id !== id);
-            // Update localStorage
-            localStorage.setItem('categories', JSON.stringify(categories));
-            updateCategoriesTable();
+        async function deleteCategory(id) {
+            try {
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    categories = categories.filter(c => c.id !== id);
+                    updateCategoriesTable();
+                } else {
+                    alert('Failed to delete category');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                alert('Error deleting category');
+            }
+        }
+
+        // Send email notifications to all users about new category
+        async function notifyUsersAboutNewCategory(categoryName, description) {
+            try {
+                const response = await fetch('/api/notify-users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        type: 'new_category',
+                        title: 'New Event Category Added!',
+                        message: `A new event category "${categoryName}" has been added to the College Fest. ${description ? `Description: ${description}` : ''} Check out the website for more details!`,
+                        categoryName: categoryName
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Email notifications sent to all users');
+                } else {
+                    console.error('Failed to send email notifications');
+                }
+            } catch (error) {
+                console.error('Error sending email notifications:', error);
+            }
         }
 
         // Sub-event management
-        document.getElementById('saveSubEventBtn').addEventListener('click', function() {
+        document.getElementById('saveSubEventBtn').addEventListener('click', async function() {
             const name = document.getElementById('subEventName').value;
             const categoryId = document.getElementById('subEventCategory').value;
             const date = document.getElementById('subEventDate').value;
             
             if (name && categoryId && date) {
-                subEvents.push({
-                    id: Date.now(),
-                    name: name,
-                    categoryId: parseInt(categoryId),
-                    date: date
-                });
-                
-                // Save to localStorage
-                localStorage.setItem('subEvents', JSON.stringify(subEvents));
-                
-                updateSubEventsTable();
-                bootstrap.Modal.getInstance(document.getElementById('addSubEventModal')).hide();
-                document.getElementById('addSubEventForm').reset();
+                try {
+                    const response = await fetch('/api/events', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                        },
+                        body: JSON.stringify({
+                            category_id: parseInt(categoryId),
+                            name: name,
+                            event_date: date,
+                            description: `Event: ${name}`
+                        })
+                    });
+
+                    if (response.ok) {
+                        const newEvent = await response.json();
+                        subEvents.push(newEvent);
+                        updateSubEventsTable();
+                        bootstrap.Modal.getInstance(document.getElementById('addSubEventModal')).hide();
+                        document.getElementById('addSubEventForm').reset();
+                        
+                        // Send email notifications to all users
+                        await notifyUsersAboutNewEvent(name, date);
+                    } else {
+                        alert('Failed to add sub-event');
+                    }
+                } catch (error) {
+                    console.error('Error adding sub-event:', error);
+                    alert('Error adding sub-event');
+                }
             }
         });
 
@@ -462,9 +561,39 @@
             loadParticipants();
         }
 
+        // Send email notifications to all users about new event
+        async function notifyUsersAboutNewEvent(eventName, eventDate) {
+            try {
+                const response = await fetch('/api/notify-users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        type: 'new_event',
+                        title: 'New Event Added!',
+                        message: `A new event "${eventName}" has been added to the College Fest, scheduled for ${eventDate}. Check out the website for more details and registration!`,
+                        eventName: eventName,
+                        eventDate: eventDate
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Email notifications sent to all users');
+                } else {
+                    console.error('Failed to send email notifications');
+                }
+            } catch (error) {
+                console.error('Error sending email notifications:', error);
+            }
+        }
+
         // Load participants when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadParticipants();
+            loadCategories();
+            loadSubEvents();
         });
     </script>
 </body>

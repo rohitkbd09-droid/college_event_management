@@ -653,67 +653,66 @@
             window.location.href = `winners.html?branch=${branch}&year=${year}&eventType=${eventType}`;
         }
 
-        // Load and display events
+        // Load and display events from database
         async function loadAndDisplayEvents() {
             try {
-                const response = await fetch('events.json');
+                const response = await fetch('/api/user-events');
                 if (!response.ok) throw new Error('Failed to load events');
                 const events = await response.json();
-                const container = document.getElementById('event-container');
                 
-                // Clear existing content
-                container.innerHTML = '';
-
-                // Create event sections for each category
-                for (const [category, items] of Object.entries(events)) {
-                    if (items.length > 0) {
-                        const eventSection = document.createElement('div');
-                        eventSection.className = 'event';
-                        
-                        const heading = document.createElement('h2');
-                        heading.className = 'sub-heading';
-                        heading.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-                        
-                        const image = document.createElement('img');
-                        image.className = 'event-img';
-                        // Set appropriate image based on category
-                        switch(category) {
-                            case 'sports':
-                                image.src = 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg';
-                                break;
-                            case 'cultural':
-                                image.src = 'https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3';
-                                break;
-                            case 'technical':
-                                image.src = 'https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg';
-                                break;
-                            default:
-                                image.src = 'https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3';
-                        }
-                        image.alt = category;
-
-                        const list = document.createElement('ul');
-                        items.forEach(item => {
-                            const listItem = document.createElement('li');
-                            listItem.textContent = item.name;
-                            if (item.date) {
-                                const dateSpan = document.createElement('span');
-                                dateSpan.className = 'event-date';
-                                dateSpan.textContent = ` (${new Date(item.date).toLocaleDateString()})`;
-                                listItem.appendChild(dateSpan);
-                            }
-                            list.appendChild(listItem);
-                        });
-
-                        eventSection.appendChild(heading);
-                        eventSection.appendChild(image);
-                        eventSection.appendChild(list);
-                        container.appendChild(eventSection);
-                    }
-                }
+                // Update the static event cards with dynamic data
+                updateEventCards(events);
+                
             } catch (error) {
                 console.error('Error loading events:', error);
+                // Fallback to static content if API fails
+                console.log('Using fallback static events');
             }
+        }
+
+        // Update event cards with dynamic data from database
+        function updateEventCards(events) {
+            const eventCards = document.querySelectorAll('.event-card');
+            
+            eventCards.forEach(card => {
+                const category = card.querySelector('h2').textContent.toLowerCase();
+                const eventList = card.querySelector('ul');
+                
+                // Clear existing list items
+                eventList.innerHTML = '';
+                
+                // Add events from database for this category
+                if (events[category] && events[category].length > 0) {
+                    events[category].forEach(event => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <strong>${event.name}</strong>
+                            ${event.date ? `<br><small style="color: #666;">📅 ${new Date(event.date).toLocaleDateString()}</small>` : ''}
+                            ${event.description ? `<br><small style="color: #888;">${event.description}</small>` : ''}
+                        `;
+                        eventList.appendChild(listItem);
+                    });
+                } else {
+                    // Show default events if no database events found
+                    const defaultEvents = getDefaultEvents(category);
+                    defaultEvents.forEach(eventName => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = eventName;
+                        eventList.appendChild(listItem);
+                    });
+                }
+            });
+        }
+
+        // Get default events for each category
+        function getDefaultEvents(category) {
+            const defaultEvents = {
+                'sports': ['Race (100m)', 'Race (200m)', 'Badminton', 'Chess', 'Table Tennis'],
+                'cultural': ['Dance', 'Poetry Slams', 'Singing'],
+                'technical': ['Coding', 'Group Discussion', 'Quiz', 'Tech Project'],
+                'other': ['Art Exhibition', 'Painting', 'Rangoli', 'Sketching']
+            };
+            return defaultEvents[category] || [];
         }
 
         // Load events when page loads
