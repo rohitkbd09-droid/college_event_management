@@ -806,6 +806,67 @@ app.get('/api/admin/dashboard', verifyAdmin, (req, res) => {
     res.json({ message: 'Welcome to admin dashboard' });
 });
 
+// Upcoming Events API
+app.get('/api/upcoming-events', (req, res) => {
+    const sql = `
+        SELECT 
+            id,
+            name,
+            category,
+            event_date,
+            description,
+            created_at
+        FROM events 
+        WHERE category IS NOT NULL 
+        AND event_date >= CURDATE()
+        ORDER BY event_date ASC
+    `;
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching upcoming events:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/upcoming-events', verifyAdmin, (req, res) => {
+    const { name, category, event_date, description } = req.body;
+    
+    if (!name || !category || !event_date) {
+        return res.status(400).json({ error: 'Name, category, and date are required' });
+    }
+    
+    const sql = 'INSERT INTO events (name, category, event_date, description) VALUES (?, ?, ?, ?)';
+    
+    db.query(sql, [name, category, event_date, description], (err, result) => {
+        if (err) {
+            console.error('Error adding upcoming event:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json({ 
+            id: result.insertId, 
+            name, 
+            category, 
+            event_date, 
+            description 
+        });
+    });
+});
+
+app.delete('/api/upcoming-events/:id', verifyAdmin, (req, res) => {
+    const { id } = req.params;
+    
+    db.query('DELETE FROM events WHERE id = ?', [id], (err) => {
+        if (err) {
+            console.error('Error deleting upcoming event:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json({ message: 'Upcoming event deleted successfully' });
+    });
+});
+
 // Send notifications to all users
 app.post('/api/notify-users', verifyAdmin, (req, res) => {
     const { type, title, message, eventName, eventDate, categoryName } = req.body;

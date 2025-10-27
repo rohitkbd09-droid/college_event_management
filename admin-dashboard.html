@@ -111,6 +111,9 @@
                     <a class="nav-link" href="#" data-section="participants">
                         <i class="bi bi-people me-2"></i> Participation List
                     </a>
+                    <a class="nav-link" href="#" data-section="upcoming-events">
+                        <i class="bi bi-calendar-plus me-2"></i> Upcoming Events
+                    </a>
                     <a class="nav-link" href="#" id="logoutBtn">
                         <i class="bi bi-box-arrow-right me-2"></i> Logout
                     </a>
@@ -206,6 +209,36 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Upcoming Events Section -->
+                <div id="upcoming-events-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Upcoming Events</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUpcomingEventModal">
+                            <i class="bi bi-plus-lg me-2"></i>Add Upcoming Event
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Event Name</th>
+                                            <th>Category</th>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="upcomingEventsTableBody">
+                                        <!-- Upcoming events will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -272,6 +305,48 @@
         </div>
     </div>
 
+    <!-- Add Upcoming Event Modal -->
+    <div class="modal fade" id="addUpcomingEventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Upcoming Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUpcomingEventForm">
+                        <div class="mb-3">
+                            <label class="form-label">Event Name</label>
+                            <input type="text" class="form-control" id="upcomingEventName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-control" id="upcomingEventCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="sports">Sports</option>
+                                <option value="cultural">Cultural</option>
+                                <option value="technical">Technical</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Event Date</label>
+                            <input type="date" class="form-control" id="upcomingEventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="upcomingEventDescription" rows="3" placeholder="Brief description of the event..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUpcomingEventBtn">Save Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Check if admin is logged in
@@ -300,6 +375,8 @@
                         section === 'sub-events' ? 'block' : 'none';
                     document.getElementById('participants-section').style.display = 
                         section === 'participants' ? 'block' : 'none';
+                    document.getElementById('upcoming-events-section').style.display = 
+                        section === 'upcoming-events' ? 'block' : 'none';
                 }
             });
         });
@@ -589,11 +666,143 @@
             }
         }
 
+        // Upcoming Events Management
+        let upcomingEvents = [];
+
+        // Load upcoming events from database
+        async function loadUpcomingEvents() {
+            try {
+                const response = await fetch('/api/upcoming-events');
+                if (response.ok) {
+                    upcomingEvents = await response.json();
+                    updateUpcomingEventsTable();
+                }
+            } catch (error) {
+                console.error('Error loading upcoming events:', error);
+            }
+        }
+
+        // Save upcoming event
+        document.getElementById('saveUpcomingEventBtn').addEventListener('click', async function() {
+            const name = document.getElementById('upcomingEventName').value;
+            const category = document.getElementById('upcomingEventCategory').value;
+            const date = document.getElementById('upcomingEventDate').value;
+            const description = document.getElementById('upcomingEventDescription').value;
+            
+            if (name && category && date) {
+                try {
+                    const response = await fetch('/api/upcoming-events', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            category: category,
+                            event_date: date,
+                            description: description
+                        })
+                    });
+
+                    if (response.ok) {
+                        const newEvent = await response.json();
+                        upcomingEvents.push(newEvent);
+                        updateUpcomingEventsTable();
+                        bootstrap.Modal.getInstance(document.getElementById('addUpcomingEventModal')).hide();
+                        document.getElementById('addUpcomingEventForm').reset();
+                        
+                        // Send email notifications to all users
+                        await notifyUsersAboutUpcomingEvent(name, category, date, description);
+                    } else {
+                        alert('Failed to add upcoming event');
+                    }
+                } catch (error) {
+                    console.error('Error adding upcoming event:', error);
+                    alert('Error adding upcoming event');
+                }
+            }
+        });
+
+        // Update upcoming events table
+        function updateUpcomingEventsTable() {
+            const tbody = document.getElementById('upcomingEventsTableBody');
+            tbody.innerHTML = '';
+            
+            upcomingEvents.forEach(event => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${event.name}</td>
+                    <td>${event.category}</td>
+                    <td>${event.event_date ? new Date(event.event_date).toLocaleDateString() : 'N/A'}</td>
+                    <td>${event.description || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUpcomingEvent(${event.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Delete upcoming event
+        async function deleteUpcomingEvent(id) {
+            try {
+                const response = await fetch(`/api/upcoming-events/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    upcomingEvents = upcomingEvents.filter(e => e.id !== id);
+                    updateUpcomingEventsTable();
+                } else {
+                    alert('Failed to delete upcoming event');
+                }
+            } catch (error) {
+                console.error('Error deleting upcoming event:', error);
+                alert('Error deleting upcoming event');
+            }
+        }
+
+        // Send email notifications about upcoming event
+        async function notifyUsersAboutUpcomingEvent(eventName, category, eventDate, description) {
+            try {
+                const response = await fetch('/api/notify-users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        type: 'upcoming_event',
+                        title: 'New Upcoming Event Added!',
+                        message: `A new upcoming event "${eventName}" has been added to the College Fest! Category: ${category}. Date: ${eventDate}. ${description ? `Description: ${description}` : ''} Don't miss out!`,
+                        eventName: eventName,
+                        eventDate: eventDate,
+                        category: category
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Email notifications sent to all users about upcoming event');
+                } else {
+                    console.error('Failed to send email notifications');
+                }
+            } catch (error) {
+                console.error('Error sending email notifications:', error);
+            }
+        }
+
         // Load participants when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadParticipants();
             loadCategories();
             loadSubEvents();
+            loadUpcomingEvents();
         });
     </script>
 </body>

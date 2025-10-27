@@ -476,9 +476,28 @@
             <p style="font-size: 1.1rem; line-height: 1.6;">Events will appear here once the admin adds them to the system.</p>
             <p style="font-size: 0.9rem; color: #888; margin-top: 20px;">Check back later or contact the admin for more information.</p>
         </div>
+        <!-- Upcoming Events Section -->
+        <div id="upcoming-events-section" style="margin-top: 60px;">
+            <h2 style="text-align: center; color: #2563eb; font-size: 2rem; margin-bottom: 30px;">
+                <i class="fas fa-calendar-alt" style="margin-right: 10px;"></i>Upcoming Events
+            </h2>
+            <div id="upcoming-events-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+                <!-- Upcoming events will be loaded here -->
+                <div id="upcoming-loading" style="text-align: center; width: 100%; padding: 40px; color: #666;">
+                    <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
+                    <p style="margin-top: 20px; font-size: 1.2rem;">Loading upcoming events...</p>
+                </div>
+            </div>
+            <div id="no-upcoming-events" style="display: none; text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
+                <h3 style="color: #333; margin-bottom: 15px;">No Upcoming Events</h3>
+                <p style="font-size: 1.1rem;">Check back later for exciting upcoming events!</p>
+            </div>
+        </div>
+
         <div class="register-button-container">
             <a href="registration.html" class="register-button">Register Now</a>
-            <button type="button" class="register-button" id="upcoming-events-btn" style="margin-left: 16px;">Upcoming Events</button>
+            <button type="button" class="register-button" id="upcoming-events-btn" style="margin-left: 16px;">View All Events</button>
         </div>
     </section>
     <section id="sponser">
@@ -747,8 +766,97 @@
             });
         }
 
+        // Load upcoming events
+        async function loadUpcomingEvents() {
+            const container = document.getElementById('upcoming-events-container');
+            const loadingMessage = document.getElementById('upcoming-loading');
+            const noEventsMessage = document.getElementById('no-upcoming-events');
+            
+            try {
+                const response = await fetch('/api/upcoming-events');
+                if (!response.ok) throw new Error('Failed to load upcoming events');
+                const events = await response.json();
+                
+                // Hide loading message
+                loadingMessage.style.display = 'none';
+                
+                if (events.length === 0) {
+                    // Show no events message
+                    noEventsMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Create upcoming event cards
+                createUpcomingEventCards(events);
+                
+            } catch (error) {
+                console.error('Error loading upcoming events:', error);
+                loadingMessage.style.display = 'none';
+                noEventsMessage.style.display = 'block';
+            }
+        }
+
+        // Create upcoming event cards
+        function createUpcomingEventCards(events) {
+            const container = document.getElementById('upcoming-events-container');
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.style.cssText = `
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 15px;
+                    padding: 25px;
+                    width: 300px;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                `;
+                
+                // Add hover effect
+                eventCard.addEventListener('mouseenter', () => {
+                    eventCard.style.transform = 'translateY(-10px) scale(1.02)';
+                    eventCard.style.boxShadow = '0 20px 40px rgba(102, 126, 234, 0.4)';
+                });
+                
+                eventCard.addEventListener('mouseleave', () => {
+                    eventCard.style.transform = 'translateY(0) scale(1)';
+                    eventCard.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)';
+                });
+                
+                // Event content
+                eventCard.innerHTML = `
+                    <div style="position: relative; z-index: 2;">
+                        <div style="font-size: 2rem; margin-bottom: 15px;">📅</div>
+                        <h3 style="margin: 0 0 10px 0; font-size: 1.4rem; font-weight: bold;">${event.name}</h3>
+                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                            <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Category:</strong> ${event.category}</p>
+                            <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Date:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
+                        </div>
+                        ${event.description ? `<p style="margin: 10px 0; font-size: 0.9rem; opacity: 0.9; font-style: italic;">"${event.description}"</p>` : ''}
+                        <div style="margin-top: 15px;">
+                            <span style="background: rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
+                                ${event.category.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                `;
+                
+                container.appendChild(eventCard);
+            });
+        }
+
         // Load events when page loads
-        document.addEventListener('DOMContentLoaded', loadAndDisplayEvents);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAndDisplayEvents();
+            loadUpcomingEvents();
+        });
 
         // Handle modal open/close
         document.getElementById('upcoming-events-btn').onclick = function() {
