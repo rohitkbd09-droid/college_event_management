@@ -25,3 +25,9 @@ services:
         sync: false
       - key: EMAIL_PASSWORD
         sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: JWT_SECRET
+        sync: false

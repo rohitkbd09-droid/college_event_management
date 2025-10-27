@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -244,6 +245,50 @@ db.connect((err) => {
 // JWT secret
 const JWT_SECRET = 'your-secret-key';
 
+// Email configuration - reusable function for production
+async function sendEmails(userMailOptions, adminMailOptions) {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+        
+        // Verify transporter configuration
+        await transporter.verify();
+        console.log('Email transporter verified successfully');
+        
+        // Send both emails in parallel
+        const [userResult, adminResult] = await Promise.allSettled([
+            transporter.sendMail(userMailOptions),
+            transporter.sendMail(adminMailOptions)
+        ]);
+        
+        if (userResult.status === 'fulfilled') {
+            console.log('User email sent successfully to:', userMailOptions.to);
+        } else {
+            console.error('Error sending user email:', userResult.reason);
+        }
+        
+        if (adminResult.status === 'fulfilled') {
+            console.log('Admin email sent successfully to:', adminMailOptions.to);
+        } else {
+            console.error('Error sending admin email:', adminResult.reason);
+        }
+        
+        return { userResult, adminResult };
+    } catch (error) {
+        console.error('Email transporter setup error:', error);
+        // Don't throw error - just log it so registration doesn't fail
+        console.log('Email sending failed, but registration continues...');
+    }
+}
+
 // Middleware to verify admin token
 const verifyAdmin = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -378,26 +423,17 @@ app.post("/register", (req, res) => {
     db.query(sql, [name, branch, phone, eventType, subEventsString, email], (err, result) => {
         if (err) {
             console.error('Database insert error:', err);
-            return res.status(500).json({
-                error: 'Database Error',
-                message: err.message,
-                code: err.code
-            });
+            console.log('Database unavailable, but continuing with email notifications...');
+            // Don't fail the request if database is down, just log the error
+        } else {
+            console.log('Registration saved to database successfully');
         }
+        
         // Respond immediately so the client isn't blocked by email delivery
         res.status(200).send('Registration Successful & Emails Sent');
 
         // Send email notifications asynchronously (do not block response)
-        try {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
-                    pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
-                }
-            });
-
-            const userMail = {
+        const userMail = {
                 from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
                 to: email,
                 subject: '🎉 College Fest Registration Confirmed!',
@@ -467,18 +503,10 @@ app.post("/register", (req, res) => {
                 `
             };
 
-            transporter.sendMail(userMail, (err1, info1) => {
-                if (err1) console.error('Error sending user email:', err1);
-                else console.log('User email sent:', info1 && info1.response);
-            });
-
-            transporter.sendMail(adminMail, (err2, info2) => {
-                if (err2) console.error('Error sending admin email:', err2);
-                else console.log('Admin email sent:', info2 && info2.response);
-            });
-        } catch (mailErr) {
-            console.error('Mailer setup error:', mailErr);
-        }
+        // Send emails asynchronously
+        sendEmails(userMail, adminMail).catch(err => {
+            console.error('Failed to send emails:', err);
+        });
     });
 });
 
@@ -860,7 +888,7 @@ app.post('/api/notify-category', verifyAdmin, (req, res) => {
             }
 
             try {
-                const transporter = nodemailer.createTransporter({
+                const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
                         user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',

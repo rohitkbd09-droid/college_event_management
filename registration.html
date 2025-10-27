@@ -135,101 +135,18 @@
                 
                 <div class="form-group">
                     <select id="eventType" required>
-                        <option value="">Select Event Type</option>
-                        <option value="sports">Sports</option>
-                        <option value="cultural">Cultural</option>
-                        <option value="technical">Technical</option>
-                        <option value="other">Other</option>
+                        <option value="">Select Category</option>
+                        <!-- Categories will be loaded dynamically -->
                     </select>
-                    <label for="eventType">Event Type</label>
+                    <label for="eventType">Category</label>
                     <div class="focus-border"></div>
                 </div>
 
-                <!-- Sports Events -->
-                <div class="event-options" id="sportsOptions" style="display: none;">
-                    <h3>Select Sports Events</h3>
-                    <div class="checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="sports" value="cricket">
-                            <span class="checkmark"></span>
-                            Cricket Tournament
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="sports" value="football">
-                            <span class="checkmark"></span>
-                            Football Championship
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="sports" value="basketball">
-                            <span class="checkmark"></span>
-                            Basketball League
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Cultural Events -->
-                <div class="event-options" id="culturalOptions" style="display: none;">
-                    <h3>Select Cultural Events</h3>
-                    <div class="checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="cultural" value="dance">
-                            <span class="checkmark"></span>
-                            Dance Competition
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="cultural" value="music">
-                            <span class="checkmark"></span>
-                            Music Performance
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="cultural" value="drama">
-                            <span class="checkmark"></span>
-                            Theater & Drama
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Technical Events -->
-                <div class="event-options" id="technicalOptions" style="display: none;">
-                    <h3>Select Technical Events</h3>
-                    <div class="checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="technical" value="coding">
-                            <span class="checkmark"></span>
-                            Coding Challenge
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="technical" value="quiz">
-                            <span class="checkmark"></span>
-                            Technical Quiz
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="technical" value="hackathon">
-                            <span class="checkmark"></span>
-                            Hackathon
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Other Events -->
-                <div class="event-options" id="otherOptions" style="display: none;">
-                    <h3>Select Other Events</h3>
-                    <div class="checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="other" value="photography">
-                            <span class="checkmark"></span>
-                            Photography Contest
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="other" value="debate">
-                            <span class="checkmark"></span>
-                            Debate Competition
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="other" value="workshop">
-                            <span class="checkmark"></span>
-                            Workshop
-                        </label>
+                <!-- Dynamic Sub-Events will be loaded here -->
+                <div id="dynamicEventOptions" style="display: none;">
+                    <h3 id="subEventsTitle">Select Sub-Events</h3>
+                    <div class="checkbox-group" id="subEventsContainer">
+                        <!-- Sub-events will be populated here dynamically -->
                     </div>
                 </div>
 
@@ -244,30 +161,104 @@
     </div>
 
     <script>
+        let categories = [];
+        let allEvents = {};
+
+        // Load categories and events from API
+        async function loadCategoriesAndEvents() {
+            try {
+                // Load categories
+                const categoriesResponse = await fetch('/api/public/categories');
+                if (categoriesResponse.ok) {
+                    categories = await categoriesResponse.json();
+                    populateCategoryDropdown();
+                }
+
+                // Load all regular events
+                const eventsResponse = await fetch('/api/public/regular-events');
+                if (eventsResponse.ok) {
+                    const eventsData = await eventsResponse.json();
+                    
+                    // Group events by category for easier access
+                    Object.keys(eventsData).forEach(categoryName => {
+                        allEvents[categoryName] = eventsData[categoryName].events;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading categories and events:', error);
+            }
+        }
+
+        function populateCategoryDropdown() {
+            const select = document.getElementById('eventType');
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select Category</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                select.appendChild(option);
+            });
+        }
+
+        function populateSubEvents(categoryName) {
+            const container = document.getElementById('subEventsContainer');
+            const titleElement = document.getElementById('subEventsTitle');
+            const dynamicOptions = document.getElementById('dynamicEventOptions');
+            
+            // Clear previous sub-events
+            container.innerHTML = '';
+            
+            // Hide if no events
+            if (!allEvents[categoryName] || allEvents[categoryName].length === 0) {
+                dynamicOptions.style.display = 'none';
+                return;
+            }
+            
+            // Update title
+            titleElement.textContent = `Select ${categoryName} Events`;
+            
+            // Add sub-events for the selected category
+            allEvents[categoryName].forEach(event => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-container';
+                
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.name = 'subEvents';
+                input.value = event.name;
+                input.id = `event_${event.id}`;
+                
+                const span = document.createElement('span');
+                span.className = 'checkmark';
+                
+                const textNode = document.createTextNode(event.name);
+                
+                label.appendChild(input);
+                label.appendChild(span);
+                label.appendChild(textNode);
+                
+                container.appendChild(label);
+            });
+            
+            dynamicOptions.style.display = 'block';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('eventForm');
             const eventTypeSelect = document.getElementById('eventType');
-            const eventOptions = {
-                sports: document.getElementById('sportsOptions'),
-                cultural: document.getElementById('culturalOptions'),
-                technical: document.getElementById('technicalOptions'),
-                other: document.getElementById('otherOptions')
-            };
 
-            // Hide all event options initially
-            Object.values(eventOptions).forEach(option => {
-                if (option) option.style.display = 'none';
-            });
+            // Load categories and events
+            loadCategoriesAndEvents();
 
-            // Show selected event options
+            // Handle category selection
             eventTypeSelect.addEventListener('change', function() {
-                Object.values(eventOptions).forEach(option => {
-                    if (option) option.style.display = 'none';
-                });
-
-                const selectedOption = eventOptions[this.value];
-                if (selectedOption) {
-                    selectedOption.style.display = 'block';
+                const selectedCategory = this.value;
+                if (selectedCategory) {
+                    populateSubEvents(selectedCategory);
+                } else {
+                    document.getElementById('dynamicEventOptions').style.display = 'none';
                 }
             });
 
@@ -279,13 +270,14 @@
                 const branch = document.getElementById('branch').value.trim();
                 const email = document.getElementById('email').value.trim();
                 const phone = document.getElementById('phone').value.trim();
-                const eventType = document.getElementById('eventType').value.trim();
+                const category = document.getElementById('eventType').value.trim();
 
+                // Get selected sub-events
                 const selectedSubEvents = Array.from(
-                    document.querySelectorAll(`input[name="${eventType}"]:checked`)
+                    document.querySelectorAll(`input[name="subEvents"]:checked`)
                 ).map(input => input.value);
 
-                if (!name || !branch || !email || !phone || !eventType) {
+                if (!name || !branch || !email || !phone || !category) {
                     alert('Please fill in all required fields');
                     return;
                 }
@@ -300,7 +292,8 @@
                     branch,
                     email,
                     phone,
-                    eventType,
+                    eventType: category, // Keep eventType for backward compatibility
+                    category: category,
                     subEvents: selectedSubEvents
                 };
 
