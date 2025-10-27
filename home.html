@@ -430,6 +430,12 @@
         <div class="nav-container">
             <ul class="nav-actions">
                 <li>
+                    <a href="#upcoming-events-section" class="nav-btn" onclick="scrollToUpcomingEvents()">
+                        <i class="fas fa-calendar-alt"></i>
+                        Upcoming Events
+                    </a>
+                </li>
+                <li>
                     <div class="notification-icon" id="notificationIcon">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge" id="notificationBadge">0</span>
@@ -476,30 +482,35 @@
             <p style="font-size: 1.1rem; line-height: 1.6;">Events will appear here once the admin adds them to the system.</p>
             <p style="font-size: 0.9rem; color: #888; margin-top: 20px;">Check back later or contact the admin for more information.</p>
         </div>
-        <!-- Upcoming Events Section -->
-        <div id="upcoming-events-section" style="margin-top: 60px;">
-            <h2 style="text-align: center; color: #2563eb; font-size: 2rem; margin-bottom: 30px;">
-                <i class="fas fa-calendar-alt" style="margin-right: 10px;"></i>Upcoming Events
-            </h2>
-            <div id="upcoming-events-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
-                <!-- Upcoming events will be loaded here -->
-                <div id="upcoming-loading" style="text-align: center; width: 100%; padding: 40px; color: #666;">
-                    <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
-                    <p style="margin-top: 20px; font-size: 1.2rem;">Loading upcoming events...</p>
-                </div>
-            </div>
-            <div id="no-upcoming-events" style="display: none; text-align: center; padding: 40px; color: #666;">
-                <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
-                <h3 style="color: #333; margin-bottom: 15px;">No Upcoming Events</h3>
-                <p style="font-size: 1.1rem;">Check back later for exciting upcoming events!</p>
-            </div>
-        </div>
-
         <div class="register-button-container">
             <a href="registration.html" class="register-button">Register Now</a>
-            <button type="button" class="register-button" id="upcoming-events-btn" style="margin-left: 16px;">View All Events</button>
         </div>
     </section>
+
+    <!-- Separate Upcoming Events Section -->
+    <section id="upcoming-events-section" style="padding: 60px 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+        <div class="container" style="max-width: 1200px; margin: 0 auto;">
+            <h1 class="heading" style="text-align: center; color: #2563eb; font-size: 2.5rem; margin-bottom: 50px; letter-spacing: 2px;">
+                <i class="fas fa-calendar-alt" style="margin-right: 15px;"></i>Upcoming Events
+            </h1>
+            
+            <div id="upcoming-events-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+                <!-- Upcoming events will be loaded here -->
+                <div id="upcoming-loading" style="text-align: center; width: 100%; padding: 60px; color: #666;">
+                    <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 3rem;">⏳</div>
+                    <p style="margin-top: 20px; font-size: 1.3rem;">Loading upcoming events...</p>
+                </div>
+            </div>
+            
+            <div id="no-upcoming-events" style="display: none; text-align: center; padding: 80px 20px; color: #666;">
+                <div style="font-size: 5rem; margin-bottom: 30px;">📅</div>
+                <h3 style="color: #333; margin-bottom: 20px; font-size: 1.8rem;">No Upcoming Events</h3>
+                <p style="font-size: 1.2rem; line-height: 1.6;">Check back later for exciting upcoming events!</p>
+                <p style="font-size: 1rem; color: #888; margin-top: 20px;">Stay tuned for announcements from our admin team.</p>
+            </div>
+        </div>
+    </section>
+
     <section id="sponser">
         <h1 class="heading">sponser</h1>
         <div class="sponserlist">
@@ -850,6 +861,17 @@
                 
                 container.appendChild(eventCard);
             });
+        }
+
+        // Scroll to upcoming events section
+        function scrollToUpcomingEvents() {
+            const upcomingSection = document.getElementById('upcoming-events-section');
+            if (upcomingSection) {
+                upcomingSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         }
 
         // Load events when page loads

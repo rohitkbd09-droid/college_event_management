@@ -70,6 +70,31 @@
     font-size: 1.1rem;
 }
 
+.nav-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.nav-btn i {
+    font-size: 1.1rem;
+}
+
 /* Hamburger Menu Styles */
 .checkbtn {
     font-size: 30px;
