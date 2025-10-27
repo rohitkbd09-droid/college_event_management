@@ -176,6 +176,41 @@ async function initializeDatabase() {
             });
         });
 
+        // Create categories table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS categories (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL UNIQUE,
+                    description TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create regular_events table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS regular_events (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    category_id INT NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    event_date DATE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
         // Create default admin user
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await new Promise((resolve, reject) => {
@@ -657,9 +692,9 @@ app.post('/submit-feedback', (req, res) => {
     });
 });
 
-// Categories API
+// Categories API - Updated for proper categories table
 app.get('/api/categories', verifyAdmin, (req, res) => {
-    db.query('SELECT * FROM events WHERE category IS NOT NULL', (err, rows) => {
+    db.query('SELECT * FROM categories ORDER BY created_at DESC', (err, rows) => {
         if (err) {
             console.error('Error fetching categories:', err);
             return res.status(500).json({ error: 'Server error' });
@@ -675,8 +710,8 @@ app.post('/api/categories', verifyAdmin, (req, res) => {
     }
 
     db.query(
-        'INSERT INTO events (name, category, description) VALUES (?, ?, ?)',
-        [name, name, description],
+        'INSERT INTO categories (name, description) VALUES (?, ?)',
+        [name, description],
         (err, result) => {
             if (err) {
                 console.error('Error adding category:', err);
@@ -689,12 +724,232 @@ app.post('/api/categories', verifyAdmin, (req, res) => {
 
 app.delete('/api/categories/:id', verifyAdmin, (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM events WHERE id = ?', [id], (err) => {
+    db.query('DELETE FROM categories WHERE id = ?', [id], (err) => {
         if (err) {
             console.error('Error deleting category:', err);
             return res.status(500).json({ error: 'Server error' });
         }
         res.json({ message: 'Category deleted successfully' });
+    });
+});
+
+// Regular Events API
+app.get('/api/regular-events', verifyAdmin, (req, res) => {
+    db.query(`
+        SELECT re.*, c.name as category_name
+        FROM regular_events re
+        JOIN categories c ON re.category_id = c.id
+        ORDER BY re.event_date ASC, re.created_at DESC
+    `, (err, rows) => {
+        if (err) {
+            console.error('Error fetching regular events:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json(rows);
+    });
+});
+
+app.post('/api/regular-events', verifyAdmin, (req, res) => {
+    const { category_id, name, description, event_date } = req.body;
+    if (!category_id || !name) {
+        return res.status(400).json({ error: 'Category and name are required' });
+    }
+
+    db.query(
+        'INSERT INTO regular_events (category_id, name, description, event_date) VALUES (?, ?, ?, ?)',
+        [category_id, name, description, event_date],
+        (err, result) => {
+            if (err) {
+                console.error('Error adding regular event:', err);
+                return res.status(500).json({ error: 'Server error' });
+            }
+            res.json({ 
+                id: result.insertId, 
+                category_id, 
+                name, 
+                description, 
+                event_date 
+            });
+        }
+    );
+});
+
+app.delete('/api/regular-events/:id', verifyAdmin, (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM regular_events WHERE id = ?', [id], (err) => {
+        if (err) {
+            console.error('Error deleting regular event:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json({ message: 'Regular event deleted successfully' });
+    });
+});
+
+// Public API to get categories for users
+app.get('/api/public/categories', (req, res) => {
+    db.query('SELECT id, name, description FROM categories ORDER BY name ASC', (err, rows) => {
+        if (err) {
+            console.error('Error fetching categories:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.json(rows);
+    });
+});
+
+// Public API to get regular events for users (grouped by category)
+app.get('/api/public/regular-events', (req, res) => {
+    db.query(`
+        SELECT re.*, c.name as category_name, c.description as category_description
+        FROM regular_events re
+        JOIN categories c ON re.category_id = c.id
+        ORDER BY c.name ASC, re.event_date ASC
+    `, (err, rows) => {
+        if (err) {
+            console.error('Error fetching regular events for users:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        
+        // Group events by category
+        const eventsByCategory = {};
+        rows.forEach(event => {
+            const categoryName = event.category_name;
+            if (!eventsByCategory[categoryName]) {
+                eventsByCategory[categoryName] = {
+                    category_description: event.category_description,
+                    events: []
+                };
+            }
+            eventsByCategory[categoryName].events.push({
+                id: event.id,
+                name: event.name,
+                description: event.description,
+                event_date: event.event_date
+            });
+        });
+        
+        res.json(eventsByCategory);
+    });
+});
+
+// Category-wise notification API
+app.post('/api/notify-category', verifyAdmin, (req, res) => {
+    const { category_id, event_name, event_description, event_date } = req.body;
+    
+    if (!category_id || !event_name) {
+        return res.status(400).json({ error: 'Category ID and event name are required' });
+    }
+
+    // Get category details
+    db.query('SELECT name, description FROM categories WHERE id = ?', [category_id], (err, categoryRows) => {
+        if (err || categoryRows.length === 0) {
+            console.error('Error fetching category:', err);
+            return res.status(500).json({ error: 'Failed to fetch category' });
+        }
+
+        const category = categoryRows[0];
+        
+        // Get all registered users (you can filter by category preferences if you add that feature)
+        db.query('SELECT id, email, firstname FROM new_registrations WHERE email IS NOT NULL', async (err, users) => {
+            if (err) {
+                console.error('Error fetching users for notifications:', err);
+                return res.status(500).json({ error: 'Failed to fetch users' });
+            }
+
+            if (users.length === 0) {
+                return res.json({ message: 'No users to notify' });
+            }
+
+            try {
+                const transporter = nodemailer.createTransporter({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
+                        pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
+                    }
+                });
+
+                // Send emails to all users
+                const emailPromises = users.map(user => {
+                    const mailOptions = {
+                        from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
+                        to: user.email,
+                        subject: `🎉 New Event in ${category.name} Category!`,
+                        html: `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                                    <h1 style="color: white; margin: 0; font-size: 28px;">🎉 New Event Added!</h1>
+                                </div>
+                                <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                    <h2 style="color: #333; margin-top: 0;">Hello ${user.firstname}!</h2>
+                                    <p style="color: #666; font-size: 16px; line-height: 1.6;">A new event has been added to the ${category.name} category!</p>
+                                    
+                                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                        <h3 style="color: #333; margin-top: 0;">📅 Event Details:</h3>
+                                        <p style="margin: 5px 0;"><strong>Event Name:</strong> ${event_name}</p>
+                                        ${event_date ? `<p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(event_date).toLocaleDateString()}</p>` : ''}
+                                        ${event_description ? `<p style="margin: 5px 0;"><strong>Description:</strong> ${event_description}</p>` : ''}
+                                        <p style="margin: 5px 0;"><strong>Category:</strong> ${category.name}</p>
+                                    </div>
+                                    
+                                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                        <p style="margin: 0; color: #1976d2; font-weight: bold;">🏷️ ${category.name}</p>
+                                        ${category.description ? `<p style="margin: 5px 0; color: #666;">${category.description}</p>` : ''}
+                                    </div>
+                                    
+                                    <div style="text-align: center; margin: 30px 0;">
+                                        <a href="http://localhost:3000" style="background: linear-gradient(135deg, #00c9ff, #92fe9d); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">Visit Our Website</a>
+                                    </div>
+                                    
+                                    <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">Best regards,<br>College Fest Team</p>
+                                </div>
+                            </div>
+                        `
+                    };
+
+                    return new Promise((resolve, reject) => {
+                        transporter.sendMail(mailOptions, (err, info) => {
+                            if (err) {
+                                console.error(`Error sending email to ${user.email}:`, err);
+                                reject(err);
+                            } else {
+                                console.log(`Email sent to ${user.email}:`, info.response);
+                                resolve(info);
+                            }
+                        });
+                    });
+                });
+
+                await Promise.all(emailPromises);
+                
+                // Insert notifications into database for all users
+                const notificationPromises = users.map(user => {
+                    return new Promise((resolve, reject) => {
+                        const notification = {
+                            user_id: user.id,
+                            title: `New Event in ${category.name} Category!`,
+                            message: `A new event "${event_name}" has been added to the ${category.name} category. ${event_description ? event_description : ''}`
+                        };
+                        
+                        db.query(
+                            'INSERT INTO notifications (user_id, title, message) VALUES (?, ?, ?)',
+                            [notification.user_id, notification.title, notification.message],
+                            (err) => {
+                                if (err) reject(err);
+                                else resolve();
+                            }
+                        );
+                    });
+                });
+
+                await Promise.all(notificationPromises);
+                
+                res.json({ message: `Notifications sent to ${users.length} users about the new ${category.name} event` });
+                
+            } catch (error) {
+                console.error('Error sending notifications:', error);
+                res.status(500).json({ error: 'Failed to send notifications' });
+            }
+        });
     });
 });
 

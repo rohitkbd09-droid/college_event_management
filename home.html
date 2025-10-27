@@ -473,7 +473,7 @@
                 <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
                 <p style="margin-top: 20px; font-size: 1.2rem;">Loading events...</p>
             </div>
-        </div>
+            </div>
         
         <!-- No Events Message (hidden by default) -->
         <div id="no-events-message" style="display: none; text-align: center; padding: 60px 20px; color: #666;">
@@ -670,15 +670,15 @@
             const noEventsMessage = document.getElementById('no-events-message');
             
             try {
-                const response = await fetch('/api/user-events');
+                const response = await fetch('/api/public/regular-events');
                 if (!response.ok) throw new Error('Failed to load events');
-                const events = await response.json();
+                const eventsByCategory = await response.json();
                 
                 // Hide loading message
                 loadingMessage.style.display = 'none';
                 
                 // Check if there are any events
-                const hasEvents = Object.keys(events).some(category => events[category].length > 0);
+                const hasEvents = Object.keys(eventsByCategory).some(category => eventsByCategory[category].events.length > 0);
                 
                 if (!hasEvents) {
                     // Show no events message
@@ -687,7 +687,7 @@
                 }
                 
                 // Create dynamic event cards
-                createDynamicEventCards(events);
+                createDynamicEventCards(eventsByCategory);
                 
             } catch (error) {
                 console.error('Error loading events:', error);
@@ -697,7 +697,7 @@
         }
 
         // Create dynamic event cards based on database data
-        function createDynamicEventCards(events) {
+        function createDynamicEventCards(eventsByCategory) {
             const container = document.getElementById('dynamic-events-container');
             
             // Clear container
@@ -705,15 +705,16 @@
             
             // Category images mapping
             const categoryImages = {
-                'sports': 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg',
-                'cultural': 'https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3',
-                'technical': 'https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg',
-                'other': 'https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3'
+                'Sports': 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg',
+                'Cultural': 'https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3',
+                'Technical': 'https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg',
+                'Other': 'https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3'
             };
             
             // Create event cards for each category that has events
-            Object.keys(events).forEach(category => {
-                if (events[category].length > 0) {
+            Object.keys(eventsByCategory).forEach(categoryName => {
+                const categoryData = eventsByCategory[categoryName];
+                if (categoryData.events && categoryData.events.length > 0) {
                     const eventCard = document.createElement('div');
                     eventCard.className = 'event-card';
                     eventCard.style.cssText = `
@@ -743,24 +744,24 @@
                     // Category title
                     const categoryTitle = document.createElement('h2');
                     categoryTitle.style.cssText = 'font-size: 1.5rem; margin-bottom: 10px; color: #333;';
-                    categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                    categoryTitle.textContent = categoryName;
                     
                     // Category image
                     const categoryImage = document.createElement('img');
-                    categoryImage.src = categoryImages[category] || categoryImages['other'];
-                    categoryImage.alt = category;
+                    categoryImage.src = categoryImages[categoryName] || categoryImages['Other'];
+                    categoryImage.alt = categoryName;
                     categoryImage.style.cssText = 'width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 8px 24px #00c9ff88);';
                     
                     // Events list
                     const eventsList = document.createElement('ul');
                     eventsList.style.cssText = 'text-align: left; margin-top: 10px; padding: 0; list-style: none;';
                     
-                    events[category].forEach(event => {
+                    categoryData.events.forEach(event => {
                         const listItem = document.createElement('li');
                         listItem.style.cssText = 'display: block; margin: 6px 0; text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px;';
                         listItem.innerHTML = `
                             <strong style="color: #333; display: block; margin-bottom: 4px;">${event.name}</strong>
-                            ${event.date ? `<small style="color: #666; display: block;">📅 ${new Date(event.date).toLocaleDateString()}</small>` : ''}
+                            ${event.event_date ? `<small style="color: #666; display: block;">📅 ${new Date(event.event_date).toLocaleDateString()}</small>` : ''}
                             ${event.description ? `<small style="color: #888; display: block; margin-top: 2px; font-style: italic;">${event.description}</small>` : ''}
                         `;
                         eventsList.appendChild(listItem);
