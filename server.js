@@ -781,12 +781,63 @@ app.post('/api/categories', verifyAdmin, (req, res) => {
 
 app.delete('/api/categories/:id', verifyAdmin, (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM categories WHERE id = ?', [id], (err) => {
+
+    // Find category name first
+    db.query('SELECT name FROM categories WHERE id = ?', [id], (err, rows) => {
         if (err) {
-            console.error('Error deleting category:', err);
+            console.error('Error reading category before delete:', err);
             return res.status(500).json({ error: 'Server error' });
         }
-        res.json({ message: 'Category deleted successfully' });
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+
+        const categoryName = rows[0].name;
+
+        // Get all sub-event names under this category
+        db.query('SELECT name FROM regular_events WHERE category_id = ?', [id], (evErr, events) => {
+            if (evErr) {
+                console.error('Error fetching sub-events for cascade deletion:', evErr);
+                return res.status(500).json({ error: 'Server error' });
+            }
+
+            // Build delete conditions for registrations: event_type match OR sub_events includes any event name
+            const deletePromises = [];
+
+            // 1) Delete registrations by category match
+            deletePromises.push(new Promise((resolve, reject) => {
+                db.query('DELETE FROM registrations WHERE event_type = ?', [categoryName], (dErr) => {
+                    if (dErr) return reject(dErr);
+                    resolve();
+                });
+            }));
+
+            // 2) Delete registrations that picked sub-events of this category
+            events.forEach((e) => {
+                deletePromises.push(new Promise((resolve, reject) => {
+                    db.query('DELETE FROM registrations WHERE sub_events LIKE ?', [`%${e.name}%`], (d2Err) => {
+                        if (d2Err) return reject(d2Err);
+                        resolve();
+                    });
+                }));
+            });
+
+            Promise.all(deletePromises)
+                .then(() => {
+                    // Finally delete the category (regular_events table has FK CASCADE)
+                    db.query('DELETE FROM categories WHERE id = ?', [id], (delErr) => {
+                        if (delErr) {
+                            console.error('Error deleting category:', delErr);
+                            return res.status(500).json({ error: 'Server error' });
+                        }
+                        res.json({ message: 'Category and related registrations deleted successfully' });
+                    });
+                })
+                .catch((cascadeErr) => {
+                    console.error('Cascade delete error for registrations:', cascadeErr);
+                    return res.status(500).json({ error: 'Server error' });
+                });
+        });
     });
 });
 
@@ -833,12 +884,35 @@ app.post('/api/regular-events', verifyAdmin, (req, res) => {
 
 app.delete('/api/regular-events/:id', verifyAdmin, (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM regular_events WHERE id = ?', [id], (err) => {
-        if (err) {
-            console.error('Error deleting regular event:', err);
+
+    // Look up the event name to clean registrations first
+    db.query('SELECT name FROM regular_events WHERE id = ?', [id], (readErr, rows) => {
+        if (readErr) {
+            console.error('Error reading regular event:', readErr);
             return res.status(500).json({ error: 'Server error' });
         }
-        res.json({ message: 'Regular event deleted successfully' });
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: 'Regular event not found' });
+        }
+
+        const eventName = rows[0].name;
+
+        // Delete any registrations that contain this sub-event in their selection
+        db.query('DELETE FROM registrations WHERE sub_events LIKE ?', [`%${eventName}%`], (regErr) => {
+            if (regErr) {
+                console.error('Error deleting registrations for sub-event:', regErr);
+                return res.status(500).json({ error: 'Server error' });
+            }
+
+            // Now remove the regular_event itself
+            db.query('DELETE FROM regular_events WHERE id = ?', [id], (delErr) => {
+                if (delErr) {
+                    console.error('Error deleting regular event:', delErr);
+                    return res.status(500).json({ error: 'Server error' });
+                }
+                res.json({ message: 'Regular event and related registrations deleted successfully' });
+            });
+        });
     });
 });
 

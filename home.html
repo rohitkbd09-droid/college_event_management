@@ -467,7 +467,7 @@
         <h1 class="heading souvenir-title" style="text-align:center; color:#2563eb; font-size:2.5rem; margin: 30px 0 40px 0; letter-spacing:2px; text-shadow: 2px 2px 8px #b2bec3;"><strong>EVENTS SOUVENIR</strong></h1>
         
         <!-- Dynamic Events Container -->
-        <div id="dynamic-events-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+        <div id="dynamic-events-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; align-items: stretch;">
             <!-- Events will be dynamically loaded here -->
             <div id="loading-message" style="text-align: center; width: 100%; padding: 40px; color: #666;">
                 <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
@@ -712,7 +712,9 @@
             };
             
             // Create event cards for each category that has events
-            Object.keys(eventsByCategory).forEach(categoryName => {
+            // Only render up to 10 cards to avoid crowding
+            const categoryNames = Object.keys(eventsByCategory).slice(0, 10);
+            categoryNames.forEach(categoryName => {
                 const categoryData = eventsByCategory[categoryName];
                 if (categoryData.events && categoryData.events.length > 0) {
                     const eventCard = document.createElement('div');
