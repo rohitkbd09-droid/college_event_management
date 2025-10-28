@@ -60,21 +60,29 @@
 <body>
   <h2>All Event Registrations</h2>
 
-  <div style="width:90%;margin:0 auto 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-    <input id="searchCategory" type="text" placeholder="Search by category (e.g., Sports)" 
-           style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid #ccc;">
-
-    <select id="branchFilter" style="width:220px;padding:10px 12px;border-radius:8px;border:1px solid #ccc;">
-      <option value="">All Branches</option>
-      <option value="CSE">CSE</option>
-      <option value="CSM">CSM</option>
-      <option value="ECE">ECE</option>
-      <option value="MECH">MECH</option>
-      <option value="CIVIL">CIVIL</option>
-    </select>
-
-    <button id="applyFilters" style="padding:10px 14px;border:none;border-radius:8px;background:#4285f4;color:#fff;cursor:pointer;">Apply</button>
-    <button id="clearFilters" style="padding:10px 14px;border:1px solid #999;border-radius:8px;background:#fff;color:#333;cursor:pointer;">Clear</button>
+  <!-- Filters -->
+  <div style="width:90%;margin:auto;margin-bottom:16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div>
+      <label for="categoryFilter" style="display:block;margin-bottom:4px;color:#333;font-weight:600">Category</label>
+      <input id="categoryFilter" placeholder="e.g. Sports / Cultural" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;min-width:220px" />
+    </div>
+    <div>
+      <label for="branchFilter" style="display:block;margin-bottom:4px;color:#333;font-weight:600">Branch</label>
+      <select id="branchFilter" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;min-width:180px">
+        <option value="">All Branches</option>
+        <option value="CSE">CSE</option>
+        <option value="CSM">CSM</option>
+        <option value="ECE">ECE</option>
+        <option value="MECH">MECH</option>
+        <option value="CIVIL">CIVIL</option>
+      </select>
+    </div>
+    <div>
+      <label for="eventFilter" style="display:block;margin-bottom:4px;color:#333;font-weight:600">Specific Event</label>
+      <input id="eventFilter" placeholder="optional: event name" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;min-width:220px" />
+    </div>
+    <button id="searchBtn" style="padding:10px 16px;background:#4285f4;border:none;color:white;border-radius:8px;cursor:pointer">Search</button>
+    <button id="clearBtn" style="padding:10px 16px;background:#9aa0a6;border:none;color:white;border-radius:8px;cursor:pointer">Clear</button>
   </div>
   <table id="registrationTable">
     <thead>
@@ -94,19 +102,17 @@
     // Use relative API path so this works when deployed
     const REG_API = '/registrations';
 
-    function buildQuery() {
-      const params = new URLSearchParams();
-      const category = document.getElementById('searchCategory').value.trim();
-      const branch = document.getElementById('branchFilter').value;
-      if (category) params.set('category', category);
-      if (branch) params.set('branch', branch);
-      const query = params.toString();
-      return query ? `${REG_API}?${query}` : REG_API;
-    }
-
     async function loadRegistrations() {
       try {
-        const url = buildQuery();
+        const url = new URL(REG_API, window.location.origin);
+        const category = document.getElementById('categoryFilter').value.trim();
+        const branch = document.getElementById('branchFilter').value.trim();
+        const event = document.getElementById('eventFilter').value.trim();
+
+        if (category) url.searchParams.set('category', category);
+        if (branch) url.searchParams.set('branch', branch);
+        if (event) url.searchParams.set('event', event);
+
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
@@ -139,15 +145,16 @@
     // Initial load
     loadRegistrations();
 
-    // Controls
-    document.getElementById('applyFilters').addEventListener('click', loadRegistrations);
-    document.getElementById('clearFilters').addEventListener('click', () => {
-      document.getElementById('searchCategory').value = '';
+    // Search and Clear handlers
+    document.getElementById('searchBtn').addEventListener('click', loadRegistrations);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('categoryFilter').value = '';
       document.getElementById('branchFilter').value = '';
+      document.getElementById('eventFilter').value = '';
       loadRegistrations();
     });
 
-    // Poll every 5 seconds to show new registrations without requiring manual refresh
+    // Poll every 5 seconds to reflect new registrations
     setInterval(loadRegistrations, 5000);
   </script>
 </body>

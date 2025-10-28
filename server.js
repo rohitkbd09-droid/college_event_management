@@ -346,7 +346,7 @@ app.get('/registrations', (req, res) => {
         params.push(event, `%${event}%`);
     }
 
-    // Filter by branch
+    // Filter by branch (exact match)
     if (branch) {
         whereClauses.push('branch = ?');
         params.push(branch);
