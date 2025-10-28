@@ -186,9 +186,15 @@
                 <div id="participants-section" style="display: none;">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2>Participation List</h2>
-                        <button class="btn btn-success" onclick="refreshParticipants()">
-                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
-                        </button>
+                        <div class="d-flex gap-2 align-items-center">
+                            <select class="form-select" id="participantsCategoryFilter" style="min-width: 160px;">
+                                <option value="">All Categories</option>
+                            </select>
+                            <input type="text" class="form-control" id="participantsEventFilter" placeholder="Filter by event (e.g., Cricket)">
+                            <button class="btn btn-success" onclick="refreshParticipants()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                            </button>
+                        </div>
                     </div>
                     <div class="card">
                         <div class="card-body">
@@ -476,6 +482,7 @@
                 if (response.ok) {
                     categories = await response.json();
                     updateCategoriesTable();
+                    updateParticipantsCategoryFilter();
                 }
             } catch (error) {
                 console.error('Error loading categories:', error);
@@ -519,6 +526,7 @@
                         const newCategory = await response.json();
                         categories.push(newCategory);
                         updateCategoriesTable();
+                        updateParticipantsCategoryFilter();
                         bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
                         document.getElementById('addCategoryForm').reset();
                         
@@ -553,6 +561,25 @@
             });
         }
 
+        function updateParticipantsCategoryFilter() {
+            const select = document.getElementById('participantsCategoryFilter');
+            if (!select) return;
+            const previous = select.value;
+            select.innerHTML = '<option value="">All Categories</option>';
+            categories
+                .slice()
+                .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                .forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.name;
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            if ([...select.options].some(o => o.value === previous)) {
+                select.value = previous;
+            }
+        }
+
         async function deleteCategory(id) {
             try {
                 const response = await fetch(`/api/categories/${id}`, {
@@ -565,6 +592,7 @@
                 if (response.ok) {
                     categories = categories.filter(c => c.id !== id);
                     updateCategoriesTable();
+                    updateParticipantsCategoryFilter();
                 } else {
                     alert('Failed to delete category');
                 }
@@ -686,7 +714,12 @@
         // Participation List functionality
         async function loadParticipants() {
             try {
-                const response = await fetch('/registrations');
+                const category = document.getElementById('participantsCategoryFilter')?.value || '';
+                const eventFilter = document.getElementById('participantsEventFilter')?.value || '';
+                const params = new URLSearchParams();
+                if (category) params.append('category', category);
+                if (eventFilter) params.append('event', eventFilter);
+                const response = await fetch(`/registrations${params.toString() ? `?${params.toString()}` : ''}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -725,6 +758,16 @@
         function refreshParticipants() {
             loadParticipants();
         }
+
+        // Auto-reload when filters change
+        document.addEventListener('DOMContentLoaded', function() {
+            const cat = document.getElementById('participantsCategoryFilter');
+            const ev = document.getElementById('participantsEventFilter');
+            if (cat) cat.addEventListener('change', loadParticipants);
+            if (ev) ev.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') loadParticipants();
+            });
+        });
 
         // Send email notifications to all users about new event
         async function notifyUsersAboutNewEvent(eventName, eventDate) {

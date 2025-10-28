@@ -326,10 +326,33 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html'))
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'contact.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'feedback.html')));
 
-// View registrations
+// View registrations (supports optional filtering by category/event)
 app.get('/registrations', (req, res) => {
-    const sql = 'SELECT * FROM registrations ORDER BY id DESC';
-    db.query(sql, (err, results) => {
+    const { category, event } = req.query;
+
+    let sql = 'SELECT * FROM registrations';
+    const params = [];
+    const whereClauses = [];
+
+    // Filter by category (maps to event_type from registration form)
+    if (category) {
+        whereClauses.push('event_type = ?');
+        params.push(category);
+    }
+
+    // Filter by specific event name (checks both event_type and sub_events list)
+    if (event) {
+        whereClauses.push('(event_type = ? OR sub_events LIKE ?)');
+        params.push(event, `%${event}%`);
+    }
+
+    if (whereClauses.length > 0) {
+        sql += ' WHERE ' + whereClauses.join(' AND ');
+    }
+
+    sql += ' ORDER BY id DESC';
+
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Fetch error:', err);
             return res.status(500).json({ error: 'Database error' });
