@@ -326,7 +326,7 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html'))
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'contact.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'feedback.html')));
 
-// View registrations (supports optional filtering by category/event)
+// View registrations (supports optional filtering by category/event/branch)
 app.get('/registrations', (req, res) => {
     const { category, event, branch } = req.query;
 
