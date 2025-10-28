@@ -28,7 +28,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+            font-family: 'Times New Roman', Times, serif;
             background: linear-gradient(135deg, var(--bg1), var(--bg2), #c1ffd7);
             background-size: 300% 300%;
             animation: gradientShift 18s ease infinite;
@@ -626,9 +626,9 @@
 
                         form.reset();
                         
-                        // Redirect after animation to the participation list so the user can see their entry
+                        // Redirect after animation to home page
                         setTimeout(() => {
-                            window.location.href = 'registrationlist.html';
+                            window.location.href = 'home.html';
                         }, 2000);
                     } else {
                         const errorMessage = await response.json().catch(() => ({ error: result }));

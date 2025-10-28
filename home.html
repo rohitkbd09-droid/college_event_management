@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/navbar.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Removed web font to use Times New Roman across site -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="js/notifications.js" defer></script>
     <title>College Fest</title>
     <style>
+        body { font-family: 'Times New Roman', Times, serif; }
+        @keyframes slideIn {
+            from { transform: translateX(40px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
         /* Notification styles */
         .notification-icon {
             position: relative;
@@ -467,7 +472,7 @@
         <h1 class="heading souvenir-title" style="text-align:center; color:#2563eb; font-size:2.5rem; margin: 30px 0 40px 0; letter-spacing:2px; text-shadow: 2px 2px 8px #b2bec3;"><strong>EVENTS SOUVENIR</strong></h1>
         
         <!-- Dynamic Events Container -->
-        <div id="dynamic-events-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; align-items: stretch;">
+        <div id="dynamic-events-container" style="position: relative;">
             <!-- Events will be dynamically loaded here -->
             <div id="loading-message" style="text-align: center; width: 100%; padding: 40px; color: #666;">
                 <div style="display: inline-block; animation: spin 1s linear infinite; font-size: 2rem;">⏳</div>
@@ -702,7 +707,21 @@
             
             // Clear container
             container.innerHTML = '';
-            
+
+            // Build a horizontal scroller track
+            const track = document.createElement('div');
+            track.style.cssText = `
+                display: flex;
+                gap: 20px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 10px 10px 20px 10px;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            `;
+            track.id = 'events-scroll-track';
+
             // Category images mapping
             const categoryImages = {
                 'Sports': 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg',
@@ -714,7 +733,7 @@
             // Create event cards for each category that has events
             // Only render up to 10 cards to avoid crowding
             const categoryNames = Object.keys(eventsByCategory).slice(0, 10);
-            categoryNames.forEach(categoryName => {
+            categoryNames.forEach((categoryName, index) => {
                 const categoryData = eventsByCategory[categoryName];
                 if (categoryData.events && categoryData.events.length > 0) {
                     const eventCard = document.createElement('div');
@@ -725,9 +744,14 @@
                         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
                         padding: 30px 25px;
                         width: 270px;
+                        min-width: 270px;
                         text-align: center;
                         transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
                         will-change: transform;
+                        scroll-snap-align: start;
+                        position: relative;
+                        animation: slideIn 0.6s ease both;
+                        animation-delay: ${index * 0.06}s;
                     `;
                     
                     // Add hover effect
@@ -774,10 +798,21 @@
                     eventCard.appendChild(categoryImage);
                     eventCard.appendChild(eventsList);
                     
-                    // Add to container
-                    container.appendChild(eventCard);
+                    // Add to track
+                    track.appendChild(eventCard);
                 }
             });
+
+            // Add track and simple gradient edges
+            container.appendChild(track);
+
+            // Edge fade overlays
+            const leftFade = document.createElement('div');
+            leftFade.style.cssText = `position:absolute; left:0; top:0; width:40px; height:100%; pointer-events:none; background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));`;
+            const rightFade = document.createElement('div');
+            rightFade.style.cssText = `position:absolute; right:0; top:0; width:40px; height:100%; pointer-events:none; background: linear-gradient(270deg, rgba(255,255,255,1), rgba(255,255,255,0));`;
+            container.appendChild(leftFade);
+            container.appendChild(rightFade);
         }
 
         // Load upcoming events
