@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Registration - College Fest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Modern colorful theme for registration page */
@@ -28,8 +28,10 @@
         }
 
         body {
-            font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
-            background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+            font-family: 'Inter', 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+            background: linear-gradient(135deg, var(--bg1), var(--bg2), #c1ffd7);
+            background-size: 300% 300%;
+            animation: gradientShift 18s ease infinite;
             background-attachment: fixed;
             color: var(--text);
             margin: 0;
@@ -39,9 +41,15 @@
             justify-content: center;
         }
 
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 760px; /* narrower for vertical flow */
             padding: 40px 20px;
         }
 
@@ -60,6 +68,48 @@
             background: radial-gradient(1000px 400px at -10% -20%, rgba(124,58,237,0.12), transparent 60%),
                         radial-gradient(800px 320px at 120% 0%, rgba(6,182,212,0.12), transparent 60%);
             pointer-events: none;
+        }
+
+        /* Floating decorative circles in the background */
+        .circles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .circles li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, rgba(124,58,237,0.45), rgba(6,182,212,0.45));
+            animation: floatUp 25s linear infinite;
+            bottom: -150px;
+            border-radius: 20px;
+            filter: blur(0.2px);
+        }
+
+        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-duration: 20s; animation-delay: 0s; }
+        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-duration: 12s; animation-delay: 2s; }
+        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-duration: 20s; animation-delay: 3s; }
+        .circles li:nth-child(4){ left: 40%; width: 60px; height: 60px; animation-duration: 18s; animation-delay: 0s; }
+        .circles li:nth-child(5){ left: 65%; width: 20px; height: 20px; animation-duration: 12s; animation-delay: 1s; }
+        .circles li:nth-child(6){ left: 75%; width: 110px; height: 110px; animation-duration: 28s; animation-delay: 0s; }
+        .circles li:nth-child(7){ left: 35%; width: 150px; height: 150px; animation-duration: 35s; animation-delay: 0s; }
+        .circles li:nth-child(8){ left: 50%; width: 25px; height: 25px; animation-duration: 45s; animation-delay: 0s; }
+        .circles li:nth-child(9){ left: 20%; width: 15px; height: 15px; animation-duration: 11s; animation-delay: 0s; }
+        .circles li:nth-child(10){ left: 85%; width: 150px; height: 150px; animation-duration: 30s; animation-delay: 0s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-1000px) rotate(360deg); opacity: 0; }
         }
 
         .form-header {
@@ -82,15 +132,13 @@
         form {
             padding: 0 32px 32px 32px;
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px 18px;
+            grid-template-columns: 1fr; /* vertical layout */
+            gap: 16px;
         }
 
-        /* Make layout responsive */
-        @media (max-width: 720px) {
-            form {
-                grid-template-columns: 1fr;
-            }
+        /* Keep typography responsive if needed */
+        @media (max-width: 480px) {
+            .container { max-width: 100%; padding: 24px 14px; }
         }
 
         .form-group {
@@ -323,6 +371,20 @@
             <p>Thank you for registering for College Fest!</p>
         </div>
     </div>
+
+    <!-- Floating background decoration -->
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
 
     <div class="container">
         <div class="registration-form">
