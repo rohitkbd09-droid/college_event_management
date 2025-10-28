@@ -61,28 +61,31 @@
   <h2>All Event Registrations</h2>
 
   <!-- Filters -->
-  <div style="width:90%;margin:0 auto 16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+  <div style="width:90%;margin:0 auto 16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
     <div>
-      <label style="display:block;margin-bottom:6px;color:#333;font-weight:600;">Category</label>
-      <input id="filterCategory" placeholder="e.g. Sports" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;width:220px;" />
-    </div>
-    <div>
-      <label style="display:block;margin-bottom:6px;color:#333;font-weight:600;">Event (optional)</label>
-      <input id="filterEvent" placeholder="e.g. Cricket" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;width:220px;" />
-    </div>
-    <div>
-      <label style="display:block;margin-bottom:6px;color:#333;font-weight:600;">Branch</label>
-      <select id="filterBranch" style="padding:8px 10px;border:1px solid #ccc;border-radius:8px;width:220px;">
+      <label for="branchFilter" style="display:block;margin-bottom:6px;color:#333;font-weight:600">Branch</label>
+      <select id="branchFilter" style="padding:8px 10px;border-radius:8px;border:1px solid #ccc;min-width:160px">
         <option value="">All</option>
         <option value="CSE">CSE</option>
         <option value="CSM">CSM</option>
-        <option value="ECE">ECE</option>
-        <option value="MECH">MECH</option>
         <option value="CIVIL">CIVIL</option>
+        <option value="MECH">MECH</option>
+        <option value="ECE">ECE</option>
       </select>
     </div>
     <div>
-      <button id="searchBtn" style="padding:10px 16px;background:#4285f4;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Search</button>
+      <label for="categoryFilter" style="display:block;margin-bottom:6px;color:#333;font-weight:600">Category</label>
+      <select id="categoryFilter" style="padding:8px 10px;border-radius:8px;border:1px solid #ccc;min-width:200px">
+        <option value="">All</option>
+      </select>
+    </div>
+    <div style="flex:1;min-width:220px">
+      <label for="eventFilter" style="display:block;margin-bottom:6px;color:#333;font-weight:600">Event name</label>
+      <input id="eventFilter" placeholder="Type event name" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ccc"/>
+    </div>
+    <div>
+      <button id="applyFilters" style="padding:10px 16px;border:none;background:#4285f4;color:#fff;border-radius:8px;cursor:pointer">Apply</button>
+      <button id="refreshBtn" style="padding:10px 16px;border:1px solid #ccc;background:#fff;color:#333;border-radius:8px;cursor:pointer;margin-left:8px">Refresh</button>
     </div>
   </div>
   <table id="registrationTable">
@@ -102,11 +105,40 @@
   <script>
     // Use relative API path so this works when deployed
     const REG_API = '/registrations';
+    const CAT_API = '/api/user-events'; // returns events grouped by category
 
-    async function loadRegistrations(query = {}) {
+    function buildQuery() {
+      const params = new URLSearchParams();
+      const branch = document.getElementById('branchFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+      const eventName = document.getElementById('eventFilter').value.trim();
+      if (branch) params.set('branch', branch);
+      if (category) params.set('category', category);
+      if (eventName) params.set('event', eventName);
+      const qs = params.toString();
+      return qs ? `${REG_API}?${qs}` : REG_API;
+    }
+
+    async function loadCategories() {
       try {
-        const qs = new URLSearchParams(query).toString();
-        const url = qs ? `${REG_API}?${qs}` : REG_API;
+        const res = await fetch(CAT_API);
+        if (!res.ok) return;
+        const grouped = await res.json();
+        const select = document.getElementById('categoryFilter');
+        // reset keeping All
+        select.innerHTML = '<option value="">All</option>';
+        Object.keys(grouped).forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          select.appendChild(opt);
+        });
+      } catch {}
+    }
+
+    async function loadRegistrations() {
+      try {
+        const url = buildQuery();
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
@@ -136,23 +168,18 @@
       }
     }
 
-    // Search handler
-    document.getElementById('searchBtn').addEventListener('click', () => {
-      const category = document.getElementById('filterCategory').value.trim();
-      const event = document.getElementById('filterEvent').value.trim();
-      const branch = document.getElementById('filterBranch').value;
-      const query = {};
-      if (category) query.category = category;
-      if (event) query.event = event;
-      if (branch) query.branch = branch;
-      loadRegistrations(query);
+    // Initial
+    loadCategories().then(loadRegistrations);
+
+    // Controls
+    document.getElementById('applyFilters').addEventListener('click', loadRegistrations);
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      // Clear inputs then reload
+      document.getElementById('branchFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('eventFilter').value = '';
+      loadCategories().then(loadRegistrations);
     });
-
-    // Initial load
-    loadRegistrations();
-
-    // Poll every 5 seconds to show new registrations without requiring manual refresh
-    setInterval(loadRegistrations, 5000);
   </script>
 </body>
 </html>

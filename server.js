@@ -326,13 +326,19 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html'))
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'contact.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'feedback.html')));
 
-// View registrations (supports optional filtering by category/event/branch)
+// View registrations (supports optional filtering by branch/category/event)
 app.get('/registrations', (req, res) => {
-    const { category, event, branch } = req.query;
+    const { branch, category, event } = req.query;
 
     let sql = 'SELECT * FROM registrations';
     const params = [];
     const whereClauses = [];
+
+    // Filter by branch (exact match)
+    if (branch) {
+        whereClauses.push('branch = ?');
+        params.push(branch);
+    }
 
     // Filter by category (maps to event_type from registration form)
     if (category) {
@@ -344,12 +350,6 @@ app.get('/registrations', (req, res) => {
     if (event) {
         whereClauses.push('(event_type = ? OR sub_events LIKE ?)');
         params.push(event, `%${event}%`);
-    }
-
-    // Filter by branch (exact match)
-    if (branch) {
-        whereClauses.push('branch = ?');
-        params.push(branch);
     }
 
     if (whereClauses.length > 0) {
