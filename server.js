@@ -326,7 +326,7 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html'))
 app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, 'contact.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'feedback.html')));
 
-// View registrations (supports optional filtering by branch/category/event)
+// View registrations (supports optional filtering by category/event)
 app.get('/registrations', (req, res) => {
     const { branch, category, event } = req.query;
 
@@ -334,9 +334,9 @@ app.get('/registrations', (req, res) => {
     const params = [];
     const whereClauses = [];
 
-    // Filter by branch (exact match)
+    // Filter by branch (CSE, CSM, ECE, MECH, CIVIL, etc.)
     if (branch) {
-        whereClauses.push('branch = ?');
+        whereClauses.push('LOWER(branch) = LOWER(?)');
         params.push(branch);
     }
 
