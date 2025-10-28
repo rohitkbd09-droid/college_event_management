@@ -187,6 +187,16 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2>Participation List</h2>
                         <div class="d-flex gap-2 align-items-center">
+                            <select class="form-select" id="participantsBranchFilter" style="min-width: 140px;">
+                                <option value="">All Branches</option>
+                                <option value="CSE">CSE</option>
+                                <option value="CSM">CSM</option>
+                                <option value="ECE">ECE</option>
+                                <option value="MECH">MECH</option>
+                                <option value="CIVIL">CIVIL</option>
+                                <option value="EEE">EEE</option>
+                                <option value="IT">IT</option>
+                            </select>
                             <select class="form-select" id="participantsCategoryFilter" style="min-width: 160px;">
                                 <option value="">All Categories</option>
                             </select>
@@ -714,9 +724,11 @@
         // Participation List functionality
         async function loadParticipants() {
             try {
+                const branch = document.getElementById('participantsBranchFilter')?.value || '';
                 const category = document.getElementById('participantsCategoryFilter')?.value || '';
                 const eventFilter = document.getElementById('participantsEventFilter')?.value || '';
                 const params = new URLSearchParams();
+                if (branch) params.append('branch', branch);
                 if (category) params.append('category', category);
                 if (eventFilter) params.append('event', eventFilter);
                 const response = await fetch(`/registrations${params.toString() ? `?${params.toString()}` : ''}`);
@@ -761,8 +773,10 @@
 
         // Auto-reload when filters change
         document.addEventListener('DOMContentLoaded', function() {
+            const branchSel = document.getElementById('participantsBranchFilter');
             const cat = document.getElementById('participantsCategoryFilter');
             const ev = document.getElementById('participantsEventFilter');
+            if (branchSel) branchSel.addEventListener('change', loadParticipants);
             if (cat) cat.addEventListener('change', loadParticipants);
             if (ev) ev.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') loadParticipants();
