@@ -9,17 +9,17 @@
     <style>
         /* Modern colorful theme for registration page */
         :root {
-            --bg1: #a18cd1; /* lavender */
-            --bg2: #fbc2eb; /* pink */
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text: #1f2d3d;
-            --muted: #6b7280;
-            --primary: #7c3aed; /* purple */
+            --bg1: #2193b0; /* blue */
+            --bg2: #6dd5ed; /* light teal */
+            --card-bg: rgba(255, 255, 255, 0.94);
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb; /* blue */
             --primary-2: #06b6d4; /* cyan */
             --success: #10b981;
             --danger: #ef4444;
-            --ring: rgba(124, 58, 237, 0.35);
-            --shadow: 0 20px 40px rgba(17, 24, 39, 0.12);
+            --ring: rgba(37, 99, 235, 0.28);
+            --shadow: 0 24px 48px rgba(2, 6, 23, 0.16);
             --radius: 18px;
         }
 
@@ -49,7 +49,7 @@
 
         .container {
             width: 100%;
-            max-width: 760px; /* narrower for vertical flow */
+            max-width: 760px; /* vertical layout width */
             padding: 40px 20px;
         }
 
@@ -65,7 +65,7 @@
             content: "";
             position: absolute;
             inset: 0;
-            background: radial-gradient(1000px 400px at -10% -20%, rgba(124,58,237,0.12), transparent 60%),
+            background: radial-gradient(1000px 400px at -10% -20%, rgba(37,99,235,0.12), transparent 60%),
                         radial-gradient(800px 320px at 120% 0%, rgba(6,182,212,0.12), transparent 60%);
             pointer-events: none;
         }
@@ -132,12 +132,12 @@
         form {
             padding: 0 32px 32px 32px;
             display: grid;
-            grid-template-columns: 1fr; /* vertical layout */
+            grid-template-columns: 1fr; /* vertical */
             gap: 16px;
         }
 
-        /* Keep typography responsive if needed */
-        @media (max-width: 480px) {
+        /* Make layout responsive */
+        @media (max-width: 720px) {
             .container { max-width: 100%; padding: 24px 14px; }
         }
 
@@ -174,6 +174,7 @@
             font-size: 14px;
             pointer-events: none;
             transition: all 0.15s ease-in-out;
+            z-index: 1;
         }
 
         .form-group input:not(:placeholder-shown) + label,
@@ -185,6 +186,17 @@
             padding: 0 6px;
             font-size: 12px;
             color: var(--primary);
+            border-radius: 6px;
+        }
+
+        /* Always elevate label for selects to avoid overlap */
+        .form-group select + label {
+            top: -8px;
+            transform: none;
+            background: var(--card-bg);
+            padding: 0 6px;
+            font-size: 12px;
+            color: var(--muted);
             border-radius: 6px;
         }
 
@@ -400,7 +412,14 @@
                 </div>
                 
                 <div class="form-group">
-                    <input type="text" id="branch" required>
+                    <select id="branch" required>
+                        <option value="">Select Branch</option>
+                        <option value="CSE">CSE</option>
+                        <option value="CSM">CSM</option>
+                        <option value="CIVIL">CIVIL</option>
+                        <option value="MECH">MECH</option>
+                        <option value="ECE">ECE</option>
+                    </select>
                     <label for="branch">Branch</label>
                     <div class="focus-border"></div>
                 </div>
