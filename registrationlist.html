@@ -59,6 +59,23 @@
 </head>
 <body>
   <h2>All Event Registrations</h2>
+
+  <div style="width:90%;margin:0 auto 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <input id="searchCategory" type="text" placeholder="Search by category (e.g., Sports)" 
+           style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid #ccc;">
+
+    <select id="branchFilter" style="width:220px;padding:10px 12px;border-radius:8px;border:1px solid #ccc;">
+      <option value="">All Branches</option>
+      <option value="CSE">CSE</option>
+      <option value="CSM">CSM</option>
+      <option value="ECE">ECE</option>
+      <option value="MECH">MECH</option>
+      <option value="CIVIL">CIVIL</option>
+    </select>
+
+    <button id="applyFilters" style="padding:10px 14px;border:none;border-radius:8px;background:#4285f4;color:#fff;cursor:pointer;">Apply</button>
+    <button id="clearFilters" style="padding:10px 14px;border:1px solid #999;border-radius:8px;background:#fff;color:#333;cursor:pointer;">Clear</button>
+  </div>
   <table id="registrationTable">
     <thead>
       <tr>
@@ -77,9 +94,20 @@
     // Use relative API path so this works when deployed
     const REG_API = '/registrations';
 
+    function buildQuery() {
+      const params = new URLSearchParams();
+      const category = document.getElementById('searchCategory').value.trim();
+      const branch = document.getElementById('branchFilter').value;
+      if (category) params.set('category', category);
+      if (branch) params.set('branch', branch);
+      const query = params.toString();
+      return query ? `${REG_API}?${query}` : REG_API;
+    }
+
     async function loadRegistrations() {
       try {
-        const res = await fetch(REG_API);
+        const url = buildQuery();
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const data = await res.json();
         console.log('Fetched data:', data);
@@ -110,6 +138,14 @@
 
     // Initial load
     loadRegistrations();
+
+    // Controls
+    document.getElementById('applyFilters').addEventListener('click', loadRegistrations);
+    document.getElementById('clearFilters').addEventListener('click', () => {
+      document.getElementById('searchCategory').value = '';
+      document.getElementById('branchFilter').value = '';
+      loadRegistrations();
+    });
 
     // Poll every 5 seconds to show new registrations without requiring manual refresh
     setInterval(loadRegistrations, 5000);

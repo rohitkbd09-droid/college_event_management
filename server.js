@@ -328,7 +328,7 @@ app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'feedback.h
 
 // View registrations (supports optional filtering by category/event)
 app.get('/registrations', (req, res) => {
-    const { category, event } = req.query;
+    const { category, event, branch } = req.query;
 
     let sql = 'SELECT * FROM registrations';
     const params = [];
@@ -344,6 +344,12 @@ app.get('/registrations', (req, res) => {
     if (event) {
         whereClauses.push('(event_type = ? OR sub_events LIKE ?)');
         params.push(event, `%${event}%`);
+    }
+
+    // Filter by branch
+    if (branch) {
+        whereClauses.push('branch = ?');
+        params.push(branch);
     }
 
     if (whereClauses.length > 0) {
