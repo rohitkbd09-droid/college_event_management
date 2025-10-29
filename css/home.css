@@ -323,25 +323,40 @@ body{
     background: white;
     color: #222;
 }
-#btn input {
-    width: 90px;
-    height: 50px;
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
+.contact-submit {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.contact-submit-btn {
+    background: linear-gradient(135deg, #00c9ff, #92fe9d);
+    color: #ffffff;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 30px;
     font-size: 1rem;
     font-weight: 600;
-    border: none;
-    border-radius: 15px;
-    background-color: #1e90ff;
-    color: white;
-    box-shadow: none;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 201, 255, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-#btn input:hover{
-    border: 1.6px solid black;
-    transition: 0.1s all ease;
-    background-color: #adff2f;
-    background-origin: border-box;
+
+.contact-submit-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 10px 24px rgba(0, 201, 255, 0.5);
+}
+
+.contact-submit-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 201, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+    .contact-submit-btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.05rem;
+    }
 }
 
 /* about section */

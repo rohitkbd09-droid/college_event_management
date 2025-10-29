@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationIcon = document.getElementById('notificationIcon');
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationBadge = document.getElementById('notificationBadge');
+    if (!notificationIcon || !notificationDropdown || !notificationBadge) {
+        return;
+    }
     let notifications = [];
     let userId = localStorage.getItem('userId'); // Get logged in user's ID
 

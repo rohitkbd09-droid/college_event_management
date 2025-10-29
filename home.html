@@ -431,23 +431,17 @@
         <label for="check" class="checkbtn">
             <i class="fas fa-bars"></i>
         </label>
-        <label class="logo"></label>
         <div class="nav-container">
+            <div class="nav-brand">
+                <img src="images/jntu-logo.png" alt="JNTU Logo" class="nav-logo">
+            </div>
+            <div class="nav-title">JNTU UCEW WANAPARTHY</div>
             <ul class="nav-actions">
                 <li>
                     <a href="#upcoming-events-section" class="nav-btn" onclick="scrollToUpcomingEvents()">
                         <i class="fas fa-calendar-alt"></i>
                         Upcoming Events
                     </a>
-                </li>
-                <li>
-                    <div class="notification-icon" id="notificationIcon">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge" id="notificationBadge">0</span>
-                        <div class="notification-dropdown" id="notificationDropdown">
-                            <div class="notification-empty">Loading notifications...</div>
-                        </div>
-                    </div>
                 </li>
                 <li>
                     <a href="admin-login.html" class="admin-btn">
@@ -577,8 +571,8 @@
                 <div class="inputs">
                     <textarea name="message" cols="30" rows="10" placeholder="Message" required></textarea>
                 </div>
-                <div id="btn">
-                    <button type="submit">Submit</button>
+                <div class="contact-submit">
+                    <button type="submit" class="contact-submit-btn">Submit</button>
                 </div>
             </form>
         </div>

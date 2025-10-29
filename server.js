@@ -127,6 +127,26 @@ async function initializeDatabase() {
             });
         });
 
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS email_notifications (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    registration_id INT,
+                    recipient_type ENUM('user','admin') NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    subject VARCHAR(255) NOT NULL,
+                    message TEXT NOT NULL,
+                    status ENUM('pending','sent','failed') DEFAULT 'pending',
+                    error_message TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (registration_id) REFERENCES registrations(id) ON DELETE SET NULL
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
         // Create programs table (used by add-program)
         await new Promise((resolve, reject) => {
             db.query(`
@@ -245,8 +265,22 @@ db.connect((err) => {
 // JWT secret
 const JWT_SECRET = 'your-secret-key';
 
-// Email configuration - reusable function for production
-async function sendEmails(userMailOptions, adminMailOptions) {
+function logEmailNotification({ registrationId, recipientType, email, subject, message, status, errorMessage }) {
+    return new Promise((resolve) => {
+        db.query(
+            `INSERT INTO email_notifications (registration_id, recipient_type, email, subject, message, status, error_message) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [registrationId, recipientType, email, subject, message, status, errorMessage || null],
+            (err) => {
+                if (err) {
+                    console.error('Email notification log error:', err);
+                }
+                resolve();
+            }
+        );
+    });
+}
+
+async function sendEmails(userMailOptions, adminMailOptions, registrationId) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -259,14 +293,38 @@ async function sendEmails(userMailOptions, adminMailOptions) {
             }
         });
         
-        // Verify transporter configuration
         await transporter.verify();
         console.log('Email transporter verified successfully');
         
-        // Send both emails in parallel
         const [userResult, adminResult] = await Promise.allSettled([
             transporter.sendMail(userMailOptions),
             transporter.sendMail(adminMailOptions)
+        ]);
+        
+        const userStatus = userResult.status === 'fulfilled' ? 'sent' : 'failed';
+        const adminStatus = adminResult.status === 'fulfilled' ? 'sent' : 'failed';
+        const userError = userResult.status === 'fulfilled' ? null : (userResult.reason?.message || String(userResult.reason));
+        const adminError = adminResult.status === 'fulfilled' ? null : (adminResult.reason?.message || String(adminResult.reason));
+        
+        await Promise.all([
+            logEmailNotification({
+                registrationId,
+                recipientType: 'user',
+                email: userMailOptions.to,
+                subject: userMailOptions.subject,
+                message: userMailOptions.html,
+                status: userStatus,
+                errorMessage: userError
+            }),
+            logEmailNotification({
+                registrationId,
+                recipientType: 'admin',
+                email: adminMailOptions.to,
+                subject: adminMailOptions.subject,
+                message: adminMailOptions.html,
+                status: adminStatus,
+                errorMessage: adminError
+            })
         ]);
         
         if (userResult.status === 'fulfilled') {
@@ -284,7 +342,28 @@ async function sendEmails(userMailOptions, adminMailOptions) {
         return { userResult, adminResult };
     } catch (error) {
         console.error('Email transporter setup error:', error);
-        // Don't throw error - just log it so registration doesn't fail
+        if (registrationId) {
+            await Promise.all([
+                logEmailNotification({
+                    registrationId,
+                    recipientType: 'user',
+                    email: userMailOptions.to,
+                    subject: userMailOptions.subject,
+                    message: userMailOptions.html,
+                    status: 'failed',
+                    errorMessage: error.message
+                }),
+                logEmailNotification({
+                    registrationId,
+                    recipientType: 'admin',
+                    email: adminMailOptions.to,
+                    subject: adminMailOptions.subject,
+                    message: adminMailOptions.html,
+                    status: 'failed',
+                    errorMessage: error.message
+                })
+            ]);
+        }
         console.log('Email sending failed, but registration continues...');
     }
 }
@@ -452,16 +531,14 @@ app.post("/register", (req, res) => {
     db.query(sql, [name, branch, phone, eventType, subEventsString, email], (err, result) => {
         if (err) {
             console.error('Database insert error:', err);
-            console.log('Database unavailable, but continuing with email notifications...');
-            // Don't fail the request if database is down, just log the error
-        } else {
-            console.log('Registration saved to database successfully');
+            return res.status(500).json({ error: 'Registration failed' });
         }
-        
-        // Respond immediately so the client isn't blocked by email delivery
+
+        console.log('Registration saved to database successfully');
+
+        const registrationId = result?.insertId || null;
         res.status(200).send('Registration Successful & Emails Sent');
 
-        // Send email notifications asynchronously (do not block response)
         const userMail = {
                 from: process.env.EMAIL_FROM || 'srinivasgalla30@gmail.com',
                 to: email,
@@ -533,8 +610,30 @@ app.post("/register", (req, res) => {
             };
 
         // Send emails asynchronously
-        sendEmails(userMail, adminMail).catch(err => {
+        sendEmails(userMail, adminMail, registrationId).catch(async err => {
             console.error('Failed to send emails:', err);
+            if (registrationId) {
+                await Promise.all([
+                    logEmailNotification({
+                        registrationId,
+                        recipientType: 'user',
+                        email: userMail.to,
+                        subject: userMail.subject,
+                        message: userMail.html,
+                        status: 'failed',
+                        errorMessage: err.message
+                    }),
+                    logEmailNotification({
+                        registrationId,
+                        recipientType: 'admin',
+                        email: adminMail.to,
+                        subject: adminMail.subject,
+                        message: adminMail.html,
+                        status: 'failed',
+                        errorMessage: err.message
+                    })
+                ]);
+            }
         });
     });
 });
