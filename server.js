@@ -282,8 +282,12 @@ function logEmailNotification({ registrationId, recipientType, email, subject, m
 
 async function sendEmails(userMailOptions, adminMailOptions, registrationId) {
     try {
+        console.log('Setting up email transporter...');
         const transporter = nodemailer.createTransport({
             service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, // true for 465, false for other ports
             auth: {
                 user: process.env.EMAIL_USER || 'srinivasgalla30@gmail.com',
                 pass: process.env.EMAIL_PASSWORD || 'qkzo owkl dkzy epti'
@@ -293,8 +297,13 @@ async function sendEmails(userMailOptions, adminMailOptions, registrationId) {
             }
         });
         
+        console.log('Verifying email transporter...');
         await transporter.verify();
-        console.log('Email transporter verified successfully');
+        console.log('✅ Email transporter verified successfully');
+        
+        console.log('Sending emails...');
+        console.log('User email to:', userMailOptions.to);
+        console.log('Admin email to:', adminMailOptions.to);
         
         const [userResult, adminResult] = await Promise.allSettled([
             transporter.sendMail(userMailOptions),
@@ -328,20 +337,21 @@ async function sendEmails(userMailOptions, adminMailOptions, registrationId) {
         ]);
         
         if (userResult.status === 'fulfilled') {
-            console.log('User email sent successfully to:', userMailOptions.to);
+            console.log('✅ User email sent successfully to:', userMailOptions.to);
         } else {
-            console.error('Error sending user email:', userResult.reason);
+            console.error('❌ Error sending user email:', userResult.reason);
         }
         
         if (adminResult.status === 'fulfilled') {
-            console.log('Admin email sent successfully to:', adminMailOptions.to);
+            console.log('✅ Admin email sent successfully to:', adminMailOptions.to);
         } else {
-            console.error('Error sending admin email:', adminResult.reason);
+            console.error('❌ Error sending admin email:', adminResult.reason);
         }
         
         return { userResult, adminResult };
     } catch (error) {
-        console.error('Email transporter setup error:', error);
+        console.error('❌ Email transporter setup error:', error);
+        console.error('Error details:', error.stack);
         if (registrationId) {
             await Promise.all([
                 logEmailNotification({
@@ -364,7 +374,8 @@ async function sendEmails(userMailOptions, adminMailOptions, registrationId) {
                 })
             ]);
         }
-        console.log('Email sending failed, but registration continues...');
+        console.log('⚠️ Email sending failed, but registration continues...');
+        throw error; // Re-throw to handle in calling function
     }
 }
 
@@ -610,8 +621,10 @@ app.post("/register", (req, res) => {
             };
 
         // Send emails asynchronously
+        console.log('Initiating email sending for registration:', registrationId);
         sendEmails(userMail, adminMail, registrationId).catch(async err => {
-            console.error('Failed to send emails:', err);
+            console.error('❌ Failed to send emails:', err);
+            console.error('Error stack:', err.stack);
             if (registrationId) {
                 await Promise.all([
                     logEmailNotification({
