@@ -37,7 +37,7 @@ const db = mysql.createPool({
 // Initialize database
 async function initializeDatabase() {
     try {
-        // Create tables
+        // Create admin_users table
         await new Promise((resolve, reject) => {
             db.query(`
                 CREATE TABLE IF NOT EXISTS admin_users (
@@ -55,12 +55,13 @@ async function initializeDatabase() {
             });
         });
 
+        // Create events table (event_date and category are nullable)
         await new Promise((resolve, reject) => {
             db.query(`
                 CREATE TABLE IF NOT EXISTS events (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
-                    event_date DATE NOT NULL,
+                    event_date DATE,
                     description TEXT,
                     category VARCHAR(100),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -72,7 +73,78 @@ async function initializeDatabase() {
             });
         });
 
-        // Create default admin user
+        // Create registrations table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS registrations (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    phone VARCHAR(20) NOT NULL,
+                    branch VARCHAR(100) NOT NULL,
+                    event_type VARCHAR(100),
+                    sub_events TEXT,
+                    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create new_registrations table (user accounts)
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS new_registrations (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    firstname VARCHAR(100),
+                    lastname VARCHAR(100),
+                    username VARCHAR(100) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create feedback table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    message TEXT NOT NULL,
+                    rating INT CHECK (rating >= 1 AND rating <= 5),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create contact_form table
+        await new Promise((resolve, reject) => {
+            db.query(`
+                CREATE TABLE IF NOT EXISTS contact_form (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    contact VARCHAR(20),
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Insert default admin user
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await new Promise((resolve, reject) => {
             db.query(`
@@ -85,9 +157,9 @@ async function initializeDatabase() {
             });
         });
 
-        console.log('Database initialized successfully');
+        console.log('✅ Database initialized successfully');
     } catch (error) {
-        console.error('Error initializing database:', error);
+        console.error('❌ Error initializing database:', error.message);
     }
 }
 
@@ -171,7 +243,7 @@ app.post("/register", (req, res) => {
     db.query(sql, [name, branch, phone, eventType, subEventsString, email], (err, result) => {
         if (err) {
             console.error('Database insert error:', err);
-            return res.status(500).send('Server Error');
+            return res.status(500).send(`Registration failed: ${err.message}`);
         }
 
         const transporter = nodemailer.createTransport({
