@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="css/home.css">
+    <title>College Fest</title>
+    <style>
+        .register-button-container {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+
+        .register-button {
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            color: white;
+            padding: 14px 35px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: float 2s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .register-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 201, 255, 0.6);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0);}
+        }
+
+        .feedback-button-container {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .feedback-button {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            color: #fff;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(255, 154, 158, 0.6);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feedback-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 18px rgba(255, 154, 158, 0.8);
+        }
+
+        .feedback-form {
+            max-width: 600px;
+            margin: 0 auto 60px;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .feedback-form .inputs {
+            margin-bottom: 15px;
+        }
+
+        .feedback-form input[type="text"],
+        .feedback-form input[type="email"],
+        .feedback-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .feedback-form textarea {
+            resize: vertical;
+        }
+
+        .feedback-form #btn {
+            text-align: center;
+        }
+
+        .feedback-form input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .feedback-form input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .star-rating {
+            direction: rtl;
+            display: inline-flex;
+            font-size: 30px;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        .star-rating label::before {
+            content: "★";
+        }
+
+        .star-rating input[type="radio"]:checked ~ label {
+            color: gold;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Feedback Button -->
+    <div class="feedback-button-container">
+        <a href="#feedback" class="feedback-button">Give Feedback</a>
+    </div>
+
+    <!-- Feedback Section -->
+    <section id="feedback">
+        <h1 class="heading">Event Feedback</h1>
+        <form action="/submit-feedback" method="POST" class="feedback-form">
+            <div class="inputs">
+                <input type="text" name="name" placeholder="Enter your Name" required>
+            </div>
+            <div class="inputs">
+                <input type="email" name="email" placeholder="Enter your Email" required>
+            </div>
+            <div class="inputs">
+                <textarea name="message" rows="4" placeholder="Write your feedback..." required></textarea>
+            </div>
+            <div class="feedback-group">
+                <label>Rate your experience:</label>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 stars"></label>
+                    <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"></label>
+                    <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"></label>
+                    <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"></label>
+                    <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"></label>
+                </div>
+            </div>
+            <div id="btn">
+                <input type="submit" value="Submit Feedback">
+            </div>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div id="footer_box">
+            Copyright &copy; www.jntuh2025.com All rights reserved!
+        </div>
+    </footer>
+
+</body>
+</html>

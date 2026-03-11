@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="css/home.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>College Fest</title>
+    <style>
+        .register-button-container {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+
+        .register-button {
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            color: white;
+            padding: 14px 35px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: float 2s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .register-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 201, 255, 0.6);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0);}
+        }
+
+        #animate {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        #cursor {
+            display: inline-block;
+            color: #00c9ff;
+            font-weight: bold;
+        }
+
+        /* Hamburger styles */
+        .hamburger-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+
+        .hamburger {
+            font-size: 30px;
+            cursor: pointer;
+            color: #ffffff;
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hamburger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 201, 255, 0.6);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            min-width: 280px;
+            border: none;
+            padding: 25px;
+            z-index: 1000;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 201, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-content form {
+            padding: 0;
+        }
+
+        .dropdown-content select,
+        .dropdown-content button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333333;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-content select option {
+            background: #ffffff;
+            color: #333333;
+            padding: 10px;
+        }
+
+        .dropdown-content select:hover,
+        .dropdown-content button:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-content select:focus,
+        .dropdown-content button:focus {
+            outline: none;
+            border-color: #00c9ff;
+            box-shadow: 0 0 0 2px rgba(0, 201, 255, 0.2);
+        }
+
+        .dropdown-content label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dropdown-content button {
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            color: #ffffff;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-content button:hover {
+            background: linear-gradient(135deg, #ff7b00, #ff9d00);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 123, 0, 0.4);
+        }
+
+        #winner-output {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .winner-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .winner-item:last-child {
+            border-bottom: none;
+        }
+
+        .winner-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid #00c9ff;
+            box-shadow: 0 0 15px rgba(0, 201, 255, 0.3);
+        }
+
+        .winner-name {
+            color: #00c9ff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .winner-details {
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .event-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            padding: 30px 25px;
+            width: 270px;
+            text-align: center;
+            transition: transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s;
+            will-change: transform;
+        }
+        .event-card:hover {
+            transform: translateY(-20px) scale(1.04);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.18);
+            z-index: 2;
+        }
+
+        .event-card ul {
+            text-align: center;
+            margin: 10px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .event-card ul li {
+            display: block;
+            margin: 6px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .event-card, .sponser-img {
+                width: 95vw;
+                min-width: unset;
+                padding: 16px 8px;
+            }
+            section {
+                padding: 12px 2px;
+            }
+        }
+
+        .event-card img, .sponser-img img {
+            filter: drop-shadow(0 8px 24px #00c9ff88);
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div class="hamburger-menu">
+        <div class="hamburger" onclick="toggleDropdownMenu()">☰</div>
+        <div id="dropdown-menu" class="dropdown-content">
+            <form onsubmit="viewWinners(event)">
+                <label for="branch">Select Branch:</label>
+                <select id="branch" name="branch" required>
+                    <option value="">--Choose Branch--</option>
+                    <option value="cse">CSE</option>
+                    <option value="csm">CSM</option>
+                    <option value="ece">ECE</option>
+                    <option value="mech">MECH</option>
+                    <option value="civil">CIVIL</option>
+                </select>
+                <label for="year">Select Year:</label>
+                <select id="year" name="year" required>
+                    <option value="">--Choose Year--</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+                <label for="eventType">Select Event Type:</label>
+                <select id="eventType" name="eventType" required>
+                    <option value="">--Choose Event Type--</option>
+                    <option value="sports">Sports</option>
+                    <option value="cultural">Cultural</option>
+                    <option value="technical">Technical</option>
+                </select>
+                <button type="submit">View Winners</button>
+            </form>
+            <div id="winner-output"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://jntuwing.in/wp-content/uploads/2022/02/71B14E20-F721-4482-B367-C06C9CF82633-e1645463061154.png" alt="logo">
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="#">home</a></li>
+                <li><a href="#all-event">events</a></li>
+                <li><a href="#sponser">our sponser</a></li>
+                <li><a href="#contact-about">contact us</a></li>
+                <li><a href="#contact-about">About</a></li>
+                <li><a href="admin-dashboard.html">Admin</a></li>
+                <li><a href="registrationlist.html">Participation List</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section id="main">
+        <div id="animate">
+            <span id="text_animation"></span>
+            <span id="cursor">|</span>
+        </div>
+        <p class="detail_para">
+            Welcome to a colorful and memorable Fest was organized in our College. In this fest, many students took part.
+            There was singing, dancing, poetry and many sports like racing, Badminton, Chess, Table tennis. Enjoy the fest with friends and win prizes.
+        </p>
+    </section>
+    <section id="all-event">
+        <h1 class="heading souvenir-title" style="text-align:center; color:#2563eb; font-size:2.5rem; margin: 30px 0 40px 0; letter-spacing:2px; text-shadow: 2px 2px 8px #b2bec3;"><strong>EVENTS SOUVENIR</strong></h1>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+            <div class="event-card">
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Sports</h2>
+                <img src="https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg" alt="sports" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
+                <ul style="text-align:left; margin-top:10px;">
+                    <li>Race (100m)</li>
+                    <li>Race (200m)</li>
+                    <li>Badminton</li>
+                    <li>Chess</li>
+                    <li>Table Tennis</li>
+                </ul>
+            </div>
+            <div class="event-card">
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Cultural</h2>
+                <img src="https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3" alt="cultural" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
+                <ul style="text-align:left; margin-top:10px;">
+                    <li>Dance</li>
+                    <li>Poetry Slams</li>
+                    <li>Singing</li>
+                </ul>
+            </div>
+            <div class="event-card">
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Technical</h2>
+                <img src="https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg" alt="technical" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
+                <ul style="text-align:left; margin-top:10px;">
+                    <li>Coding</li>
+                    <li>Group Discussion</li>
+                    <li>Quiz</li>
+                    <li>Tech Project</li>
+                </ul>
+            </div>
+            <div class="event-card">
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Other</h2>
+                <img src="https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3" alt="other" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px;">
+                <ul style="text-align:left; margin-top:10px;">
+                    <li>Art Exhibition</li>
+                    <li>Painting</li>
+                    <li>Rangoli</li>
+                    <li>Sketching</li>
+                </ul>
+            </div>
+        </div>
+        <div class="register-button-container">
+            <a href="registration.html" class="register-button">Register Now</a>
+            <button type="button" class="register-button" id="upcoming-events-btn" style="margin-left: 16px;">Upcoming Events</button>
+        </div>
+    </section>
+    <section id="sponser">
+        <h1 class="heading">sponser</h1>
+        <div class="sponserlist">
+            <div class="sponser-img">
+                <img src="principalsir.jpg" alt="other">
+                <p style="font-size:18px; font-weight: bold;color: #333; text-align: center; margin: 10px 0; line-height: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    "Honoring Champions<br>
+                    -Sheilds by N.V.S.RAJU."
+                </p>
+                <h2>Principal</h2>
+            </div>
+            <div class="sponser-img">
+                <img src="vpsir.jpg" alt="other">
+                <p style="font-size:18px; font-weight: bold;color: #333; text-align: center; margin: 10px 0; line-height: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    "Dress Kit Sponsored by<br>RamNaresh Yadav"
+                </p>
+                <h2>Vice Principal</h2>
+            </div>
+            <div class="sponser-img">
+                <img src="ashamam.jpg" alt="other">
+                <p style="font-size:18px; font-weight: bold;color: #333; text-align: center; margin: 10px 0; line-height: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    "Medical Kits Sponsored by<br>Dr. Aasha Jyothi"
+                </p>
+                <h2>HOD</h2>
+            </div>
+        </div>
+    </section>
+    <section id="contact-about">
+        <div class="about">
+            <h1 class="con-abh1">About</h1>
+            <div class="detail">
+                <div class="logo">
+                    <img src="https://static.toiimg.com/photo/24938368.cms?imgsize=72091">
+                </div>
+                <h1>COLLEGE EVENT 2025 </h1>
+                <h1><a href="register.jsp" target="_blank">Register Here</a></h1>
+                <h1>College: JNTUH Engineering College, NagarKurnool Road, Wanaparthy 509103</h1>
+                <h1>Phone: 8639605675</h1>
+            </div>
+            <div class="links">
+                <a href="#"><img src="https://th.bing.com/th/id/OIP.xdv0SGuh3lcQdygSUqRvtwAAAA?rs=1&pid=ImgDetMain" alt=""></a>
+                <a href="#"><img src="https://th.bing.com/th/id/OIP.TJPPqgPkbIoECkGmtCrmIQHaHa?w=250&h=250&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" alt=""></a>
+                <a href="#"><img src="https://th.bing.com/th/id/OIP.sQNq8e312BE_PKz6S9XJWgHaHe?rs=1&pid=ImgDetMain" alt=""></a>
+            </div>
+        </div>
+
+        <div class="contact">
+            <h1 class="con-abh1">Contact</h1>
+            <form action="/submit-form" method="POST">
+                <div class="inputs">
+                    <input type="text" name="name" placeholder="Enter your Name" required>
+                </div>
+                <div class="inputs">
+                    <input type="email" name="email" placeholder="Enter your Email" required>
+                </div>
+                <div class="inputs">
+                    <input type="number" name="contact" placeholder="Enter your Contact ">
+                </div>
+                <div class="inputs">
+                    <textarea name="message" cols="30" rows="10" placeholder="Message" required></textarea>
+                </div>
+                <div id="btn">
+                    <input type="submit" value="Submit">
+                </div>
+            </form>
+        </div>
+    </section>
+    <footer>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="feedback.html" class="register-button">Give Feedback</a>
+        </div>
+        <div id="footer_box">
+            Copyright © www.jntuh2025.com All rights reserved!
+        </div>
+    </footer>
+
+    <div id="upcoming-events-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(20,24,40,0.95); z-index:9999; overflow:auto;">
+        <div style="max-width:800px; margin:60px auto; background:rgba(36,40,59,0.98); border-radius:24px; box-shadow:0 8px 32px #00c9ff55; padding:32px 24px; position:relative;">
+            <button id="close-upcoming-events" style="position:absolute; top:16px; right:24px; background:none; border:none; color:#fff; font-size:2rem; cursor:pointer;">&times;</button>
+            <h2 style="text-align:center; color:#fff; margin-bottom:30px;">Upcoming Events</h2>
+            <div class="upcoming-events-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
+                <!-- Events will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const textElement = document.getElementById("text_animation");
+        const cursor = document.getElementById("cursor");
+
+        const phrases = [
+            "Welcome to College Fest!",
+            "Sing, Dance, Play and Win!",
+            "Unleash Your Inner Talent!",
+            "Make Memories That Last!"
+        ];
+
+        let phraseIndex = 0;
+        let letterIndex = 0;
+        let typing = true;
+
+        function type() {
+            const currentPhrase = phrases[phraseIndex];
+            if (typing) {
+                textElement.textContent = currentPhrase.substring(0, letterIndex++);
+                if (letterIndex > currentPhrase.length) {
+                    typing = false;
+            setTimeout(type, 1500);
+                } else {
+                    setTimeout(type, 100);
+                }
+            } else {
+                textElement.textContent = currentPhrase.substring(0, --letterIndex);
+                if (letterIndex === 0) {
+                    typing = true;
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                    setTimeout(type, 500);
+                } else {
+                    setTimeout(type, 50);
+                }
+            }
+        }
+
+        setInterval(() => {
+            cursor.style.opacity = cursor.style.opacity === "0" ? "1" : "0";
+        }, 500);
+
+        type();
+
+        function toggleDropdownMenu() {
+            const menu = document.getElementById("dropdown-menu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        async function viewWinners(event) {
+            event.preventDefault();
+            const branch = document.getElementById('branch').value;
+            const year = document.getElementById('year').value;
+            const eventType = document.getElementById('eventType').value;
+            
+            // Redirect to winners.html with query parameters
+            window.location.href = `winners.html?branch=${branch}&year=${year}&eventType=${eventType}`;
+        }
+
+        // Load and display events
+        async function loadAndDisplayEvents() {
+            try {
+                const response = await fetch('events.json');
+                if (!response.ok) throw new Error('Failed to load events');
+                const events = await response.json();
+                const container = document.getElementById('event-container');
+                
+                // Clear existing content
+                container.innerHTML = '';
+
+                // Create event sections for each category
+                for (const [category, items] of Object.entries(events)) {
+                    if (items.length > 0) {
+                        const eventSection = document.createElement('div');
+                        eventSection.className = 'event';
+                        
+                        const heading = document.createElement('h2');
+                        heading.className = 'sub-heading';
+                        heading.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                        
+                        const image = document.createElement('img');
+                        image.className = 'event-img';
+                        // Set appropriate image based on category
+                        switch(category) {
+                            case 'sports':
+                                image.src = 'https://4.bp.blogspot.com/-yRTu5K8GCss/VKUmvUAzo-I/AAAAAAAAA8E/O7-n5larg0w/s1600/elite_sports_logo_2_by_s_havrisik-d2xqmsr-2.jpg';
+                                break;
+                            case 'cultural':
+                                image.src = 'https://th.bing.com/th/id/OIP.H_rpllLq50amGRpLG2xHswHaFH?pid=ImgDet&w=184&h=127&c=7&dpr=1.3';
+                                break;
+                            case 'technical':
+                                image.src = 'https://static.vecteezy.com/system/resources/previews/007/396/362/original/creative-modern-abstract-programming-coding-logo-design-colorful-gradient-coding-logo-design-template-vector.jpg';
+                                break;
+                            default:
+                                image.src = 'https://th.bing.com/th/id/OIP.SWaiB8w---YHf46bX9VWJQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3';
+                        }
+                        image.alt = category;
+
+                        const list = document.createElement('ul');
+                        items.forEach(item => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = item.name;
+                            if (item.date) {
+                                const dateSpan = document.createElement('span');
+                                dateSpan.className = 'event-date';
+                                dateSpan.textContent = ` (${new Date(item.date).toLocaleDateString()})`;
+                                listItem.appendChild(dateSpan);
+                            }
+                            list.appendChild(listItem);
+                        });
+
+                        eventSection.appendChild(heading);
+                        eventSection.appendChild(image);
+                        eventSection.appendChild(list);
+                        container.appendChild(eventSection);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+
+        // Load events when page loads
+        document.addEventListener('DOMContentLoaded', loadAndDisplayEvents);
+
+        // Handle modal open/close
+        document.getElementById('upcoming-events-btn').onclick = function() {
+            document.getElementById('upcoming-events-modal').style.display = 'block';
+            displayUpcomingEvents();
+        };
+        
+        document.getElementById('close-upcoming-events').onclick = function() {
+            document.getElementById('upcoming-events-modal').style.display = 'none';
+        };
+
+        // Function to display upcoming events
+        function displayUpcomingEvents() {
+            const subEvents = JSON.parse(localStorage.getItem('subEvents')) || [];
+            const categories = JSON.parse(localStorage.getItem('categories')) || [];
+            
+            // Sort events by date
+            const sortedEvents = subEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const eventsContainer = document.querySelector('.upcoming-events-container');
+            eventsContainer.innerHTML = '';
+            
+            sortedEvents.forEach(event => {
+                const category = categories.find(c => c.id === event.categoryId);
+                const eventDate = new Date(event.date);
+                const formattedDate = eventDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const eventCard = document.createElement('div');
+                eventCard.style.background = 'rgba(255,255,255,0.1)';
+                eventCard.style.borderRadius = '12px';
+                eventCard.style.padding = '20px';
+                eventCard.style.color = '#fff';
+                eventCard.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                eventCard.style.transition = 'transform 0.3s ease';
+                eventCard.style.cursor = 'pointer';
+                eventCard.style.border = '1px solid rgba(255,255,255,0.1)';
+                
+                eventCard.innerHTML = `
+                    <h3 style="margin:0 0 10px 0; color:#00c9ff;">${event.name}</h3>
+                    <p style="margin:5px 0; font-size:0.9em;">
+                        <strong style="color:#92fe9d;">Category:</strong> ${category ? category.name : 'Unknown'}
+                    </p>
+                    <p style="margin:5px 0; font-size:0.9em;">
+                        <strong style="color:#92fe9d;">Date:</strong> ${formattedDate}
+                    </p>
+                `;
+                
+                eventCard.addEventListener('mouseover', () => {
+                    eventCard.style.transform = 'translateY(-5px)';
+                });
+                
+                eventCard.addEventListener('mouseout', () => {
+                    eventCard.style.transform = 'translateY(0)';
+                });
+                
+                eventsContainer.appendChild(eventCard);
+            });
+            
+            // If no events, show a message
+            if (sortedEvents.length === 0) {
+                eventsContainer.innerHTML = `
+                    <div style="text-align:center; color:#fff; grid-column:1/-1; padding:20px;">
+                        <p style="font-size:1.2em;">No upcoming events scheduled yet.</p>
+                        <p style="font-size:0.9em; color:#92fe9d;">Please check back later or contact the admin.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    <script src="js/home.js"></script>
+
+</body>
+</html>

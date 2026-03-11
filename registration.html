@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration - College Fest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="registration-form">
+            <div class="form-header">
+                <h2>Event Registration</h2>
+                <p>Register for exciting events at our college fest</p>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <input type="text" id="name" required>
+                    <label for="name">Name</label>
+                    <div class="focus-border"></div>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="branch" required>
+                    <label for="branch">Branch</label>
+                    <div class="focus-border"></div>
+                </div>
+                
+                <div class="form-group">
+                    <input type="email" id="email" required>
+                    <label for="email">Email</label>
+                    <div class="focus-border"></div>
+                </div>
+
+                <div class="form-group">
+                    <input type="tel" id="phone" required>
+                    <label for="phone">Phone Number</label>
+                    <div class="focus-border"></div>
+                </div>
+                
+                <div class="form-group">
+                    <select id="eventType" required>
+                        <option value="">Select Event Type</option>
+                        <option value="sports">Sports</option>
+                        <option value="cultural">Cultural</option>
+                        <option value="technical">Technical</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <label for="eventType">Event Type</label>
+                    <div class="focus-border"></div>
+                </div>
+
+                <!-- Sports Events -->
+                <div class="event-options" id="sportsOptions" style="display: none;">
+                    <h3>Select Sports Events</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="sports" value="cricket">
+                            <span class="checkmark"></span>
+                            Cricket Tournament
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="sports" value="football">
+                            <span class="checkmark"></span>
+                            Football Championship
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="sports" value="basketball">
+                            <span class="checkmark"></span>
+                            Basketball League
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Cultural Events -->
+                <div class="event-options" id="culturalOptions" style="display: none;">
+                    <h3>Select Cultural Events</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="cultural" value="dance">
+                            <span class="checkmark"></span>
+                            Dance Competition
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="cultural" value="music">
+                            <span class="checkmark"></span>
+                            Music Performance
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="cultural" value="drama">
+                            <span class="checkmark"></span>
+                            Theater & Drama
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Technical Events -->
+                <div class="event-options" id="technicalOptions" style="display: none;">
+                    <h3>Select Technical Events</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="technical" value="coding">
+                            <span class="checkmark"></span>
+                            Coding Challenge
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="technical" value="quiz">
+                            <span class="checkmark"></span>
+                            Technical Quiz
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="technical" value="hackathon">
+                            <span class="checkmark"></span>
+                            Hackathon
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Other Events -->
+                <div class="event-options" id="otherOptions" style="display: none;">
+                    <h3>Select Other Events</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="other" value="photography">
+                            <span class="checkmark"></span>
+                            Photography Contest
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="other" value="debate">
+                            <span class="checkmark"></span>
+                            Debate Competition
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="other" value="workshop">
+                            <span class="checkmark"></span>
+                            Workshop
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Register Now</span>
+                    <div class="arrow-wrapper">
+                        <div class="arrow"></div>
+                    </div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('eventForm');
+            const eventTypeSelect = document.getElementById('eventType');
+            const eventOptions = {
+                sports: document.getElementById('sportsOptions'),
+                cultural: document.getElementById('culturalOptions'),
+                technical: document.getElementById('technicalOptions'),
+                other: document.getElementById('otherOptions')
+            };
+
+            // Hide all event options initially
+            Object.values(eventOptions).forEach(option => {
+                if (option) option.style.display = 'none';
+            });
+
+            // Show selected event options
+            eventTypeSelect.addEventListener('change', function() {
+                Object.values(eventOptions).forEach(option => {
+                    if (option) option.style.display = 'none';
+                });
+
+                const selectedOption = eventOptions[this.value];
+                if (selectedOption) {
+                    selectedOption.style.display = 'block';
+                }
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value.trim();
+                const branch = document.getElementById('branch').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const eventType = document.getElementById('eventType').value.trim();
+
+                const selectedSubEvents = Array.from(
+                    document.querySelectorAll(`input[name="${eventType}"]:checked`)
+                ).map(input => input.value);
+
+                if (!name || !branch || !email || !phone || !eventType) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                if (selectedSubEvents.length === 0) {
+                    alert('Please select at least one event');
+                    return;
+                }
+
+                const formData = {
+                    name,
+                    branch,
+                    email,
+                    phone,
+                    eventType,
+                    subEvents: selectedSubEvents
+                };
+
+                try {
+                    const response = await fetch('http://localhost:3000/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.text();
+
+                    if (response.ok) {
+                        alert(result);
+                        form.reset();
+                        window.location.href = 'index.html';
+                    } else {
+                        throw new Error(result);
+                    }
+                } catch (error) {
+                    console.error('Registration Error:', error);
+                    alert('Registration failed. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

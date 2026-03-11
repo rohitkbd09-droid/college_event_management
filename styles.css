@@ -1,0 +1,144 @@
+/* Modern Variables */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #2c3e50;
+    --accent-color: #e74c3c;
+    --text-color: #333;
+    --light-bg: #f5f6fa;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* Registration Form */
+.registration-form,
+.login-form {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+h2 {
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Login and Register Links */
+.login-link,
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.login-link a,
+.register-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover,
+.register-link a:hover {
+    color: var(--secondary-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .registration-form,
+    .login-form {
+        padding: 20px;
+    }
+}

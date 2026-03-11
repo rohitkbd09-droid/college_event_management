@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Student Profile</title>
+        <link href="css/studentProfile.css" rel="stylesheet" type="text/css"/>
+        <link href="css/nav.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+        
+        <h1 id="detail_heading">Program List</h1>
+        <div class="select_eve">
+            <label for="event">Sort By :</label>
+            <select onchange="getList(this.value);" name="program" id="event">
+                <option value="All Event">All Event</option>
+                <%  DbConnect db = new DbConnect();
+                    Connection conn = db.openConnection();
+                    String query = "select (eventName) from event order by eventName asc;";
+                    ResultSet data = db.getData(conn, query);
+                %>
+                <%
+                    while (data.next())
+                    {
+                %>
+                <option value="<%=data.getString("eventName")%>"><%=data.getString("eventName")%></option>
+                <%
+                    }
+                %>
+                <%
+                    conn.close();
+                %>
+
+            </select>
+        </div>
+        <div id="table">
+
+        </div>
+        <!--javascript-->
+
+        <script src="js/studentProfile.js" type="text/javascript"></script>
+    </body>
+</html>
